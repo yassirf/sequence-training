@@ -93,39 +93,6 @@ class LabelSmoothedCrossEntropyAndSelfKLCriterion(LabelSmoothedCrossEntropyCrite
         self.temperature_scale_num = temperature_scale_num
         self.estimation_iter = estimation_iter
 
-    """
-    @classmethod
-    def add_args(cls, parser):
-        
-        Add criterion-specific arguments to the parser.
-        
-        # super().add_args(parser)
-        parser.add_argument(
-            '--self-ratio',
-            default=0.0,
-            type=float,
-            help='constant factor in the weighted sum of losses'
-        )
-        parser.add_argument(
-            '--temperature-scale-est',
-            default=1.0,
-            type=float,
-            help='temperature in estimating target dirichlet'
-        )
-        parser.add_argument(
-            '--temperature-scale-num',
-            default=1.0,
-            type=float,
-            help='temperature in kl divergence between dirichlets'
-        )
-        parser.add_argument(
-            '--estimation-iter',
-            default=0,
-            type=int,
-            help='number of re-estimations steps in computing target dirichlet'
-        )
-    """
-
     @classmethod
     def build_criterion(cls, cfg: LabelSmoothedCrossEntropyAndSelfKLCriterionConfig, task):
         return LabelSmoothedCrossEntropyAndSelfKLCriterion(
