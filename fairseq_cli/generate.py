@@ -66,9 +66,6 @@ def _main(cfg: DictConfig, output_file):
     )
     logger = logging.getLogger("fairseq_cli.generate")
     logger.info("modified generation script for uncertainty")
-    logger.info(dir(cfg))
-    logger.info(dir(cfg.task))
-    logger.info(dir(cfg.generation))
 
     utils.import_user_module(cfg.common)
 
@@ -303,7 +300,7 @@ def _main(cfg: DictConfig, output_file):
                         file=output_file,
                     )
 
-                    if cfg.compute_uncertainty:
+                    if cfg.task.compute_uncertainty:
                         print('T-EEX-{}\t{}'.format(
                             sample_id,
                             ' '.join(map(
