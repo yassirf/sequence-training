@@ -98,7 +98,7 @@ class LabelSmoothedCrossEntropyAndSelfKLCriterion(LabelSmoothedCrossEntropyCrite
         """
         Add criterion-specific arguments to the parser.
         """
-        super().add_args(parser)
+        # super().add_args(parser)
         parser.add_argument(
             '--self-ratio',
             default=0.0,
