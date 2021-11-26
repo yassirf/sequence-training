@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass, field
 import torch
 from omegaconf import II
@@ -29,13 +30,15 @@ class TranslationUncertaintyConfig(TranslationConfig):
     sentence_avg: bool = II("optimization.sentence_avg")
 
 
-@register_task("uncertainty_generation", dataclass=TranslationUncertaintyConfig)
+@register_task("uncertainty_translation", dataclass=TranslationUncertaintyConfig)
 class TranslationUncertaintyTask(TranslationTask):
 
     cfg: TranslationUncertaintyConfig
 
     def __init__(self, args, src_dict, tgt_dict):
         super(TranslationUncertaintyTask, self).__init__(args, src_dict, tgt_dict)
+        logger = logging.getLogger("fairseq_cli.task")
+        logger.info("initialising the uncertainty translation module")
 
         self.args = args
 
