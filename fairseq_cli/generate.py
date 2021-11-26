@@ -301,7 +301,7 @@ def _main(cfg: DictConfig, output_file):
                     )
 
                     if cfg.task.compute_uncertainty:
-                        print('T-EEX-{}\t{}'.format(
+                        print('UNC-T-EEX-{}\t{}'.format(
                             sample_id,
                             ' '.join(map(
                                 lambda x: '{:.8f}'.format(x),
@@ -309,7 +309,7 @@ def _main(cfg: DictConfig, output_file):
                             ))
                         ))
 
-                        print('T-EXE-{}\t{}'.format(
+                        print('UNC-T-EXE-{}\t{}'.format(
                             sample_id,
                             ' '.join(map(
                                 lambda x: '{:.8f}'.format(x),
@@ -317,7 +317,7 @@ def _main(cfg: DictConfig, output_file):
                             ))
                         ))
 
-                        print('T-MI-{}\t{}'.format(
+                        print('UNC-T-MI-{}\t{}'.format(
                             sample_id,
                             ' '.join(map(
                                 lambda x: '{:.8f}'.format(x),
@@ -325,7 +325,7 @@ def _main(cfg: DictConfig, output_file):
                             ))
                         ))
 
-                        print('T-PE-TU-{}\t{}'.format(
+                        print('UNC-T-PE-TU-{}\t{}'.format(
                             sample_id,
                             ' '.join(map(
                                 lambda x: '{:.8f}'.format(x),
@@ -334,7 +334,7 @@ def _main(cfg: DictConfig, output_file):
                         ))
 
                         print(
-                            'SU-{}\t{}\t{}\t{}\t{}'.format(
+                            'UNC-SU-{}\t{}\t{}\t{}\t{}'.format(
                                 sample_id,
                                 hypo['sequence_uncertainties']['pe_entropy_expected'].float().cpu(),
                                 hypo['sequence_uncertainties']['expected_entropy'].float().cpu(),
