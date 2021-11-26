@@ -18,7 +18,6 @@ from itertools import chain
 import numpy as np
 import torch
 from fairseq import checkpoint_utils, options, scoring, tasks, utils
-
 from fairseq.dataclass.utils import convert_namespace_to_omegaconf
 from fairseq.logging import progress_bar
 from fairseq.logging.meters import StopwatchMeter, TimeMeter
@@ -65,7 +64,6 @@ def _main(cfg: DictConfig, output_file):
         stream=output_file,
     )
     logger = logging.getLogger("fairseq_cli.generate")
-    logger.info("modified generation script for uncertainty")
 
     utils.import_user_module(cfg.common)
 
@@ -299,49 +297,6 @@ def _main(cfg: DictConfig, output_file):
                         ),
                         file=output_file,
                     )
-
-                    if cfg.compute_uncertainty:
-                        print('T-EEX-{}\t{}'.format(
-                            sample_id,
-                            ' '.join(map(
-                                lambda x: '{:.8f}'.format(x),
-                                hypo['token_uncertainties']['entropy_expected'].tolist(),
-                            ))
-                        ))
-
-                        print('T-EXE-{}\t{}'.format(
-                            sample_id,
-                            ' '.join(map(
-                                lambda x: '{:.8f}'.format(x),
-                                hypo['token_uncertainties']['expected_entropy'].tolist(),
-                            ))
-                        ))
-
-                        print('T-MI-{}\t{}'.format(
-                            sample_id,
-                            ' '.join(map(
-                                lambda x: '{:.8f}'.format(x),
-                                hypo['token_uncertainties']['mutual_information'].tolist(),
-                            ))
-                        ))
-
-                        print('T-PE-TU-{}\t{}'.format(
-                            sample_id,
-                            ' '.join(map(
-                                lambda x: '{:.8f}'.format(x),
-                                hypo['token_uncertainties']['token_pe_TU'].tolist(),
-                            ))
-                        ))
-
-                        print(
-                            'SU-{}\t{}\t{}\t{}\t{}'.format(
-                                sample_id,
-                                hypo['sequence_uncertainties']['pe_entropy_expected'].float().cpu(),
-                                hypo['sequence_uncertainties']['expected_entropy'].float().cpu(),
-                                hypo['sequence_uncertainties']['pe_mutual_information'].float().cpu(),
-                                hypo['sequence_uncertainties']['pe_sTU'].float().cpu(),
-                                hypo['sequence_uncertainties']['log-prob'],
-                            ))
 
                     if cfg.generation.print_alignment == "hard":
                         print(
