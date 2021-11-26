@@ -67,6 +67,8 @@ def _main(cfg: DictConfig, output_file):
     logger = logging.getLogger("fairseq_cli.generate")
     logger.info("modified generation script for uncertainty")
     logger.info(dir(cfg))
+    logger.info(dir(cfg.task))
+    logger.info(dir(cfg.generation))
 
     utils.import_user_module(cfg.common)
 
