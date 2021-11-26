@@ -29,7 +29,7 @@ class TranslationUncertaintyConfig(TranslationConfig):
     sentence_avg: bool = II("optimization.sentence_avg")
 
 
-@register_task("translation_uncertainty", dataclass=TranslationUncertaintyConfig)
+@register_task("uncertainty_generation", dataclass=TranslationUncertaintyConfig)
 class TranslationUncertaintyTask(TranslationTask):
 
     cfg: TranslationUncertaintyConfig
