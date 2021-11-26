@@ -16,8 +16,8 @@ from self_distribution_distillation_src.modules.decoder import (
 @register_model('self_dirichlet_transformer')
 class SelfDirichletTransformerModel(TransformerModel):
 
-    @staticmethod
-    def add_args(parser):
+    @classmethod
+    def add_args(cls, parser):
         TransformerModel.add_args(parser)
         parser.add_argument('--uniform-gauss-a', type=float, default=0.0)
         parser.add_argument('--uniform-gauss-b', type=float, default=0.0)
