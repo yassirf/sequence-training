@@ -48,12 +48,12 @@ class SelfDirichletTransformerDecoder(TransformerDecoder):
             self.output_projection = nn.Linear(
                 self.embed_tokens.weight.shape[1],
                 self.embed_tokens.weight.shape[0],
-                bias=self.bias,
+                bias=cfg.bias,
             )
             self.output_projection.weight = self.embed_tokens.weight
         else:
             self.output_projection = nn.Linear(
-                self.output_embed_dim, len(dictionary), bias=self.bias
+                self.output_embed_dim, len(dictionary), bias=cfg.bias
             )
             nn.init.normal_(
                 self.output_projection.weight, mean=0, std=self.output_embed_dim ** -0.5
