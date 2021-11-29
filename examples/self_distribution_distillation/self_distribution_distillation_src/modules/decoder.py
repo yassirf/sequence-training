@@ -18,19 +18,20 @@ class SelfDirichletTransformerDecoder(TransformerDecoder):
             embed_tokens,
             no_encoder_attn=False,
             output_projection=None,
+            bias=False
     ):
         super().__init__(
             args = args,
             dictionary = dictionary,
             embed_tokens = embed_tokens,
             no_encoder_attn = no_encoder_attn,
-            # output_projection = output_projection
+            output_projection = output_projection
         )
         self.stochasticity = MultiplicativeGaussianLayer(args.uniform_gauss_a, args.uniform_gauss_b, use_gpu = True)
         self.num_passes = args.num_passes
 
         # Use bias in output projection
-        self.bias = True
+        self.bias = bool(bias)
 
     def build_output_projection(self, cfg, dictionary, embed_tokens):
         if cfg.adaptive_softmax_cutoff is not None:

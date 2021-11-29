@@ -22,6 +22,7 @@ class SelfDirichletTransformerModel(TransformerModel):
         parser.add_argument('--uniform-gauss-a', type=float, default=0.0)
         parser.add_argument('--uniform-gauss-b', type=float, default=0.0)
         parser.add_argument('--num-passes', type=int, default=0)
+        parser.add_argument('--bias', type=int, default=0)
 
     @classmethod
     def build_decoder(cls, args, tgt_dict, embed_tokens):
@@ -30,7 +31,8 @@ class SelfDirichletTransformerModel(TransformerModel):
             tgt_dict,
             embed_tokens,
             no_encoder_attn=args.no_cross_attention,
-            # output_projection=None
+            output_projection=None,
+            bias=args.bias
         )
 
 
@@ -38,6 +40,7 @@ def self_get_attributes(args):
     args.uniform_gauss_a = getattr(args, 'uniform_gauss_a', 0.1)
     args.uniform_gauss_b = getattr(args, 'uniform_gauss_b', 0.1)
     args.num_passes = getattr(args, 'num_passes', 5)
+    args.num_passes = getattr(args, 'bias', 0)
 
 
 @register_model_architecture('self_dirichlet_transformer', 'self_dirichlet_transformer')
