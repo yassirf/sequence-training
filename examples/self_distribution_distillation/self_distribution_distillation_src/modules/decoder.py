@@ -20,7 +20,7 @@ class SelfDirichletTransformerDecoder(TransformerDecoder):
             output_projection=None,
             bias=False
     ):
-        super().__init__(
+        super(SelfDirichletTransformerDecoder, self).__init__(
             args = args,
             dictionary = dictionary,
             embed_tokens = embed_tokens,
