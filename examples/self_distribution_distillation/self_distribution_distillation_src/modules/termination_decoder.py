@@ -29,7 +29,7 @@ class TerminationTransformerDecoder(TransformerDecoder):
 
         # Termination policy
         term_prob = args.termination_probability
-        self.termination_policy = [term_prob/(1 - i * term_prob) for i in self.num_layers]
+        self.termination_policy = [term_prob/(1 - i * term_prob) for i in range(self.num_layers)]
 
         # Use bias in output projection
         self.bias = bool(bias)
