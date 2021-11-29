@@ -24,6 +24,7 @@ class TerminationTransformerModel(TransformerModel):
     def add_args(cls, parser):
         TransformerModel.add_args(parser)
         parser.add_argument('--termination-probability', type=float, default=0.0)
+        parser.add_argument('--bias', type=int, default=0)
 
     @classmethod
     def build_decoder(cls, args, tgt_dict, embed_tokens):
@@ -99,6 +100,7 @@ class TerminationTransformerModel(TransformerModel):
 
 def termination_get_attributes(args):
     args.termination_probability = getattr(args, 'termination_probability', 0.0)
+    args.bias = getattr(args, 'bias', 0)
 
 
 @register_model_architecture('termination_transformer', 'termination_transformer')
