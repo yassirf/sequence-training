@@ -1,9 +1,13 @@
 import torch
-from typing import Any, Dict, List, Optional
+import torch.nn as nn
 from torch import Tensor
 
+from typing import Any, Dict, List, Optional
+
 from self_distribution_distillation_src.modules.noise import MultiplicativeGaussianLayer
+from fairseq import utils
 from fairseq.models.transformer import TransformerDecoder
+from fairseq.modules import AdaptiveSoftmax, BaseLayer
 
 
 class SelfDirichletTransformerDecoder(TransformerDecoder):
@@ -24,6 +28,41 @@ class SelfDirichletTransformerDecoder(TransformerDecoder):
         )
         self.stochasticity = MultiplicativeGaussianLayer(args.uniform_gauss_a, args.uniform_gauss_b, use_gpu = True)
         self.num_passes = args.num_passes
+
+        # Use bias in output projection
+        self.bias = True
+
+    def build_output_projection(self, cfg, dictionary, embed_tokens):
+        if cfg.adaptive_softmax_cutoff is not None:
+            self.adaptive_softmax = AdaptiveSoftmax(
+                len(dictionary),
+                self.output_embed_dim,
+                utils.eval_str_list(cfg.adaptive_softmax_cutoff, type=int),
+                dropout=cfg.adaptive_softmax_dropout,
+                adaptive_inputs=embed_tokens if cfg.tie_adaptive_weights else None,
+                factor=cfg.adaptive_softmax_factor,
+                tie_proj=cfg.tie_adaptive_proj,
+            )
+        elif self.share_input_output_embed:
+            self.output_projection = nn.Linear(
+                self.embed_tokens.weight.shape[1],
+                self.embed_tokens.weight.shape[0],
+                bias=self.bias,
+            )
+            self.output_projection.weight = self.embed_tokens.weight
+        else:
+            self.output_projection = nn.Linear(
+                self.output_embed_dim, len(dictionary), bias=self.bias
+            )
+            nn.init.normal_(
+                self.output_projection.weight, mean=0, std=self.output_embed_dim ** -0.5
+            )
+        num_base_layers = cfg.base_layers
+        for i in range(num_base_layers):
+            self.layers.insert(
+                ((i + 1) * cfg.decoder.layers) // (num_base_layers + 1),
+                BaseLayer(cfg),
+            )
 
     def forward(
             self,

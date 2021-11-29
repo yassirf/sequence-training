@@ -334,7 +334,7 @@ def _main(cfg: DictConfig, output_file):
                         ))
 
                         print(
-                            'UNC-SU-{}\t{}\t{}\t{}\t{}'.format(
+                            'UNC-SU-{}\t{}\t{}\t{}\t{}\t{}'.format(
                                 sample_id,
                                 hypo['sequence_uncertainties']['pe_entropy_expected'].float().cpu(),
                                 hypo['sequence_uncertainties']['expected_entropy'].float().cpu(),
