@@ -178,8 +178,7 @@ class TerminationTransformerDecoder(TransformerDecoder):
                 attn = layer_attn.float().to(x)
 
             # Store the termination state
-            if self.termination_policy[idx] > 1e-3:
-                termination_states.append(x)
+            if idx >= self.half_size: termination_states.append(x)
 
             # Stop the model early
             if early_termination: break
