@@ -27,13 +27,19 @@ class TerminationTransformerDecoder(TransformerDecoder):
             output_projection = output_projection
         )
 
-        # Termination policy
+        # Termination probability
         term_prob = args.termination_probability
-        self.termination_policy = [term_prob/(1 - i * term_prob) for i in range(self.num_layers)]
 
         # Termination over the second half of the decoder
         self.half_size = (self.num_layers+1)//2 if args.half_termination else 0
-        self.termination_policy = [0.0] * self.half_size + self.termination_policy[self.half_size:]
+
+        # Ensure probability mass valid
+        assert term_prob * self.half_size <= 1.00
+
+        # Create policy
+        self.termination_policy = [0.0] * self.half_size
+        for i in range(self.num_layers - self.half_size):
+            self.termination_policy.append(term_prob/(1 - i * term_prob))
 
         # Use bias in output projection
         self.bias = bool(bias)
