@@ -37,18 +37,6 @@ class TerminationTransformerModel(TransformerModel):
             bias=args.bias
         )
 
-    def manual_forward_output(self, x):
-        if self.layer_norm is not None:
-            x = self.layer_norm(x)
-
-        # T x B x C -> B x T x C
-        x = x.transpose(0, 1)
-
-        if self.project_out_dim is not None:
-            x = self.project_out_dim(x)
-
-        return x
-
     def forward(
         self,
         src_tokens,
@@ -85,7 +73,7 @@ class TerminationTransformerModel(TransformerModel):
         _, extra = decoder_out
 
         # Get all output predictions
-        v = [self.manual_forward_output(op) for op in extra['inner_states']]
+        v = [self.decoder.manual_forward_output(op) for op in extra['inner_states']]
         v = self.decoder.output_layer(torch.stack(v, dim=1))
         v = torch.log_softmax(v, dim = -1)
 
