@@ -157,7 +157,7 @@ class TerminationTransformerDecoder(TransformerDecoder):
         # decoder layers
         attn: Optional[Tensor] = None
         inner_states: List[Optional[Tensor]] = [x]
-        termination_states = List[Optional[Tensor]] = []
+        termination_states: List[Optional[Tensor]] = []
 
         # termination network early
         for idx, layer in enumerate(self.layers):
