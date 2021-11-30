@@ -17,7 +17,7 @@ class TerminationTransformerDecoder(TransformerDecoder):
             embed_tokens,
             no_encoder_attn=False,
             output_projection=None,
-            bias=False
+            bias=False,
     ):
         super(TerminationTransformerDecoder, self).__init__(
             args = args,
@@ -30,6 +30,10 @@ class TerminationTransformerDecoder(TransformerDecoder):
         # Termination policy
         term_prob = args.termination_probability
         self.termination_policy = [term_prob/(1 - i * term_prob) for i in range(self.num_layers)]
+
+        # Termination over the second half of the decoder
+        self.half_size = (self.num_layers+1)//2 if args.half_termination else 0
+        self.termination_policy = [0.0] * self.half_size + self.termination_policy[self.half_size:]
 
         # Use bias in output projection
         self.bias = bool(bias)
@@ -147,6 +151,7 @@ class TerminationTransformerDecoder(TransformerDecoder):
         # decoder layers
         attn: Optional[Tensor] = None
         inner_states: List[Optional[Tensor]] = [x]
+        termination_states = List[Optional[Tensor]] = []
 
         # termination network early
         for idx, layer in enumerate(self.layers):
@@ -155,7 +160,7 @@ class TerminationTransformerDecoder(TransformerDecoder):
             else:
                 self_attn_mask = None
 
-            # Early termination network
+            # Early termination network — terminate after this layer
             early_termination = self.training and (torch.rand(1).item() < self.termination_policy[idx])
 
             x, layer_attn, _ = layer(
@@ -171,6 +176,10 @@ class TerminationTransformerDecoder(TransformerDecoder):
             inner_states.append(x)
             if layer_attn is not None and idx == alignment_layer:
                 attn = layer_attn.float().to(x)
+
+            # Store the termination state
+            if self.termination_policy[idx] > 1e-3:
+                termination_states.append(x)
 
             # Stop the model early
             if early_termination: break
@@ -191,7 +200,7 @@ class TerminationTransformerDecoder(TransformerDecoder):
         if self.project_out_dim is not None:
             x = self.project_out_dim(x)
 
-        return x, {"attn": [attn], "inner_states": inner_states}
+        return x, {"attn": [attn], "inner_states": inner_states, "termination_states": termination_states}
 
     def manual_forward_output(self, x):
         if self.layer_norm is not None:

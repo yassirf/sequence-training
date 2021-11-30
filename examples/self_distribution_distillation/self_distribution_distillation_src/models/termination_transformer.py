@@ -73,7 +73,7 @@ class TerminationTransformerModel(TransformerModel):
         _, extra = decoder_out
 
         # Get all output predictions
-        v = [self.decoder.manual_forward_output(op) for op in extra['inner_states']]
+        v = [self.decoder.manual_forward_output(op) for op in extra['termination_states']]
         v = self.decoder.output_layer(torch.stack(v, dim=1))
         v = torch.log_softmax(v, dim = -1)
 
@@ -86,9 +86,10 @@ class TerminationTransformerModel(TransformerModel):
         return x, extra
 
 
-def termination_get_attributes(args):
+def termination_get_attributes(args, half_termination = False):
     args.termination_probability = getattr(args, 'termination_probability', 0.0)
     args.bias = getattr(args, 'bias', 0)
+    args.half_termination = getattr(args, 'half_termination', half_termination)
 
 
 @register_model_architecture('termination_transformer', 'termination_transformer')
@@ -101,3 +102,15 @@ def self_dirichlet_transformer(args):
 def self_dirichlet_transformer_wmt_en_de_big(args):
     transformer_wmt_en_de_big(args)
     termination_get_attributes(args)
+
+
+@register_model_architecture('termination_transformer', 'half_termination_transformer')
+def self_dirichlet_transformer(args):
+    base_architecture(args)
+    termination_get_attributes(args, half_termination = True)
+
+
+@register_model_architecture('termination_transformer', 'half_termination_transformer_wmt_en_de_big')
+def self_dirichlet_transformer_wmt_en_de_big(args):
+    transformer_wmt_en_de_big(args)
+    termination_get_attributes(args, half_termination=True)
