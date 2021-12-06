@@ -369,7 +369,9 @@ class MimoTransformerDecoder(TransformerDecoder):
                 self.embed_tokens.weight.shape[0] * cfg.num_heads,
                 bias=cfg.bias,
             )
-            self.output_projection.weight = torch.cat([self.embed_tokens.weight for _ in range(cfg.num_heads)])
+            import pdb; pdb.set_trace()
+            weight = torch.cat([self.embed_tokens.weight for _ in range(cfg.num_heads)])
+            self.output_projection.weight = torch.nn.Parameter(weight)
         else:
             self.output_projection = nn.Linear(
                 self.output_embed_dim, len(dictionary) * cfg.num_heads, bias=cfg.bias
