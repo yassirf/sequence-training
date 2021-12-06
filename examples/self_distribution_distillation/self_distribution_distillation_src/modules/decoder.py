@@ -369,6 +369,7 @@ class MimoTransformerDecoder(TransformerDecoder):
                 self.embed_tokens.weight.shape[0] * cfg.num_heads,
                 bias=cfg.bias,
             )
+            import pdb; pdb.set_trace()
             self.output_projection.weight = self.embed_tokens.weight
         else:
             self.output_projection = nn.Linear(
