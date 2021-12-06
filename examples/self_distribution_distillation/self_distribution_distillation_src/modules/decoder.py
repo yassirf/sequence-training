@@ -380,9 +380,9 @@ class MimoTransformerDecoder(TransformerDecoder):
                 bias=cfg.bias,
             ) for _ in range(cfg.num_heads)]
 
-            # Initialise with embedding token weights
-            for output_projection in modulelist:
-                output_projection.weight = self.embed_tokens.weight
+            # Share with embedding token weights
+            # for output_projection in modulelist:
+            #     output_projection.weight = self.embed_tokens.weight
 
             # Now combine the layers into a single entity
             self.output_projection = Concatenator(nn.ModuleList(modulelist))
