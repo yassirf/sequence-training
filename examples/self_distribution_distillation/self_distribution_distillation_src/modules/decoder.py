@@ -11,15 +11,6 @@ from fairseq.models.transformer import TransformerDecoder
 from fairseq.modules import AdaptiveSoftmax, BaseLayer
 
 
-class Concatenator(nn.Module):
-    def __init__(self, modulelist: nn.ModuleList):
-        super(Concatenator, self).__init__()
-        self.modulelist = modulelist
-
-    def forward(self, x):
-        return torch.cat([layer(x) for layer in self.modulelist], dim = -1)
-
-
 class SelfDirichletTransformerDecoder(TransformerDecoder):
     def __init__(
             self,
@@ -373,19 +364,13 @@ class MimoTransformerDecoder(TransformerDecoder):
                 tie_proj=cfg.tie_adaptive_proj,
             )
         elif self.share_input_output_embed:
-            # Build a list of linear layers
-            modulelist = [nn.Linear(
+            self.output_projection = nn.Linear(
                 self.embed_tokens.weight.shape[1],
-                self.embed_tokens.weight.shape[0],
+                self.embed_tokens.weight.shape[0] * cfg.num_heads,
                 bias=cfg.bias,
-            ) for _ in range(cfg.num_heads)]
-
-            # Share with embedding token weights
-            # for output_projection in modulelist:
-            #     output_projection.weight = self.embed_tokens.weight
-
-            # Now combine the layers into a single entity
-            self.output_projection = Concatenator(nn.ModuleList(modulelist))
+            )
+            # We do not share decoder embedding and output weights
+            # self.output_projection.weight = self.embed_tokens.weight
         else:
             self.output_projection = nn.Linear(
                 self.output_embed_dim, len(dictionary) * cfg.num_heads, bias=cfg.bias
