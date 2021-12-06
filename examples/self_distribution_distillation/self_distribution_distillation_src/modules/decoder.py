@@ -353,11 +353,9 @@ class MimoTransformerDecoder(TransformerDecoder):
         self.num_heads = num_heads
 
     def build_output_projection(self, cfg, dictionary, embed_tokens):
-        import logging
-        logger = logging.getLogger("fairseq_cli.generate")
         if cfg.adaptive_softmax_cutoff is not None:
             self.adaptive_softmax = AdaptiveSoftmax(
-                len(dictionary),
+                len(dictionary) * cfg.num_heads,
                 self.output_embed_dim,
                 utils.eval_str_list(cfg.adaptive_softmax_cutoff, type=int),
                 dropout=cfg.adaptive_softmax_dropout,
@@ -365,17 +363,13 @@ class MimoTransformerDecoder(TransformerDecoder):
                 factor=cfg.adaptive_softmax_factor,
                 tie_proj=cfg.tie_adaptive_proj,
             )
-            logger.info('y')
-            logger.info(self.adaptive_softmax)
         elif self.share_input_output_embed:
             self.output_projection = nn.Linear(
                 self.embed_tokens.weight.shape[1],
-                self.embed_tokens.weight.shape[0],
+                self.embed_tokens.weight.shape[0] * cfg.num_heads,
                 bias=cfg.bias,
             )
             self.output_projection.weight = self.embed_tokens.weight
-            logger.info('yy')
-            logger.info(self.output_projection)
         else:
             self.output_projection = nn.Linear(
                 self.output_embed_dim, len(dictionary) * cfg.num_heads, bias=cfg.bias
@@ -383,8 +377,6 @@ class MimoTransformerDecoder(TransformerDecoder):
             nn.init.normal_(
                 self.output_projection.weight, mean=0, std=self.output_embed_dim ** -0.5
             )
-            logger.info('yyy')
-            logger.info(self.output_projection)
         num_base_layers = cfg.base_layers
         for i in range(num_base_layers):
             self.layers.insert(
