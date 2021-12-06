@@ -346,6 +346,7 @@ class MimoTransformerDecoder(TransformerDecoder):
             output_projection=None,
             bias=False,
             num_heads=2,
+            naive=False
     ):
         super(MimoTransformerDecoder, self).__init__(
             args = args,
@@ -361,6 +362,9 @@ class MimoTransformerDecoder(TransformerDecoder):
         # Number of heads in mimo model
         self.num_heads = num_heads
 
+        # Letting output heads and embedding share weights or not
+        self.naive = naive
+
     def build_output_projection(self, cfg, dictionary, embed_tokens):
         if cfg.adaptive_softmax_cutoff is not None:
             self.adaptive_softmax = AdaptiveSoftmax(
@@ -372,7 +376,7 @@ class MimoTransformerDecoder(TransformerDecoder):
                 factor=cfg.adaptive_softmax_factor,
                 tie_proj=cfg.tie_adaptive_proj,
             )
-        elif self.share_input_output_embed:
+        elif self.share_input_output_embed and not cfg.naive_mimo:
             # Build a list of linear layers
             modulelist = [nn.Linear(
                 self.embed_tokens.weight.shape[1],

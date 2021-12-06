@@ -19,6 +19,7 @@ class MimoTransformerModel(TransformerModel):
     @classmethod
     def add_args(cls, parser):
         TransformerModel.add_args(parser)
+        parser.add_argument('--naive-mimo', type=int, default=0)
         parser.add_argument('--num-heads', type=int, default=2)
         parser.add_argument('--bias', type=int, default=0)
 
@@ -32,55 +33,49 @@ class MimoTransformerModel(TransformerModel):
             output_projection=None,
             bias=args.bias,
             num_heads=args.num_heads,
+            naive=args.naive_mimo,
         )
 
 
-def mimo1_get_attributes(args):
-    args.num_heads = 1
-    args.bias = 1
-
-
-def mimo2_get_attributes(args):
-    args.num_heads = 2
-    args.bias = 1
-
-
-def mimo3_get_attributes(args):
-    args.num_heads = 3
-    args.bias = 1
+def mimo_get_attributes(args, heads, bias, naive):
+    args.num_heads = heads
+    args.bias = bias
+    args.naive_mimo = naive
 
 
 @register_model_architecture('mimo_transformer', 'mimo1_transformer')
-def self_dirichlet_transformer(args):
+def mimo1_transformer(args):
     base_architecture(args)
-    mimo1_get_attributes(args)
-
-
-@register_model_architecture('mimo_transformer', 'mimo1_transformer_wmt_en_de_big')
-def self_dirichlet_transformer_wmt_en_de_big(args):
-    transformer_wmt_en_de_big(args)
-    mimo1_get_attributes(args)
+    mimo_get_attributes(args, 1, False, False)
 
 
 @register_model_architecture('mimo_transformer', 'mimo2_transformer')
-def self_dirichlet_transformer(args):
+def mimo2_transformer(args):
     base_architecture(args)
-    mimo2_get_attributes(args)
-
-
-@register_model_architecture('mimo_transformer', 'mimo2_transformer_wmt_en_de_big')
-def self_dirichlet_transformer_wmt_en_de_big(args):
-    transformer_wmt_en_de_big(args)
-    mimo2_get_attributes(args)
+    mimo_get_attributes(args, 2, False, False)
 
 
 @register_model_architecture('mimo_transformer', 'mimo3_transformer')
-def self_dirichlet_transformer(args):
+def mimo3_transformer(args):
     base_architecture(args)
-    mimo3_get_attributes(args)
+    mimo_get_attributes(args, 3, False, False)
 
 
-@register_model_architecture('mimo_transformer', 'mimo3_transformer_wmt_en_de_big')
-def self_dirichlet_transformer_wmt_en_de_big(args):
-    transformer_wmt_en_de_big(args)
-    mimo3_get_attributes(args)
+@register_model_architecture('mimo_transformer', 'mimo1_naive_transformer')
+def mimo1_naive_transformer(args):
+    base_architecture(args)
+    mimo_get_attributes(args, 1, True, True)
+
+
+@register_model_architecture('mimo_transformer', 'mimo2_naive_transformer')
+def mimo2_naive_transformer(args):
+    base_architecture(args)
+    mimo_get_attributes(args, 2, True, True)
+
+
+@register_model_architecture('mimo_transformer', 'mimo3_naive_transformer')
+def mimo3_naive_transformer(args):
+    base_architecture(args)
+    mimo_get_attributes(args, 3, True, True)
+
+
