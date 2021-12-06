@@ -1,4 +1,3 @@
-
 import numpy
 import torch
 from typing import Optional
@@ -12,7 +11,7 @@ from fairseq.models.transformer import (
     base_architecture,
     transformer_wmt_en_de_big
 )
-from self_distribution_distillation_src.modules.termination_decoder import (
+from self_distribution_distillation_src.modules.decoder import (
     TerminationTransformerDecoder
 )
 
