@@ -12,7 +12,7 @@ from fairseq.modules import AdaptiveSoftmax, BaseLayer
 
 
 class Concatenator(nn.Module):
-    def __init__(self, modulelist):
+    def __init__(self, modulelist: nn.ModuleList):
         super(Concatenator, self).__init__()
         self.modulelist = modulelist
 
@@ -373,20 +373,19 @@ class MimoTransformerDecoder(TransformerDecoder):
                 tie_proj=cfg.tie_adaptive_proj,
             )
         elif self.share_input_output_embed:
-
             # Build a list of linear layers
-            self.output_projection = nn.ModuleList([nn.Linear(
+            modulelist = [nn.Linear(
                 self.embed_tokens.weight.shape[1],
                 self.embed_tokens.weight.shape[0],
                 bias=cfg.bias,
-            ) for _ in range(cfg.num_heads)])
+            ) for _ in range(cfg.num_heads)]
 
             # Initialise with embedding token weights
-            for output_projection in self.output_projections:
+            for output_projection in modulelist:
                 output_projection.weight = self.embed_tokens.weight
 
             # Now combine the layers into a single entity
-            self.output_projection = Concatenator(self.output_projection)
+            self.output_projection = Concatenator(nn.ModuleList(modulelist))
         else:
             self.output_projection = nn.Linear(
                 self.output_embed_dim, len(dictionary) * cfg.num_heads, bias=cfg.bias
