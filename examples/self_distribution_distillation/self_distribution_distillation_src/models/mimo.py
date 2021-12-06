@@ -35,6 +35,11 @@ class MimoTransformerModel(TransformerModel):
         )
 
 
+def mimo1_get_attributes(args):
+    args.num_heads = 1
+    args.bias = 1
+
+
 def mimo2_get_attributes(args):
     args.num_heads = 2
     args.bias = 1
@@ -43,6 +48,18 @@ def mimo2_get_attributes(args):
 def mimo3_get_attributes(args):
     args.num_heads = 3
     args.bias = 1
+
+
+@register_model_architecture('mimo_transformer', 'mimo1_transformer')
+def self_dirichlet_transformer(args):
+    base_architecture(args)
+    mimo1_get_attributes(args)
+
+
+@register_model_architecture('mimo_transformer', 'mimo1_transformer_wmt_en_de_big')
+def self_dirichlet_transformer_wmt_en_de_big(args):
+    transformer_wmt_en_de_big(args)
+    mimo1_get_attributes(args)
 
 
 @register_model_architecture('mimo_transformer', 'mimo2_transformer')
