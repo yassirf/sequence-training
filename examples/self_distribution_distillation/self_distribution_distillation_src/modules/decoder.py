@@ -386,7 +386,7 @@ class MimoTransformerDecoder(TransformerDecoder):
         x = torch.diagonal(x, offset=0, dim1=0, dim2=3).permute(3, 0, 1, 2)
 
         # Return the formatted prediction
-        return x.view(-1, s, v)
+        return x.reshape(-1, s, v)
 
     @staticmethod
     def ensemble(x):
