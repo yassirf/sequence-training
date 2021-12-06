@@ -111,8 +111,8 @@ class SelfDirichletTransformerDecoder(TransformerDecoder):
             return z, extra
 
         # Stochastic last layer
-        vs = v.unsqueeze(1).repeat(1, self.num_passes, 1, 1)
-        zs = self.output_layer(self.stochasticity(vs))
+        zs = [self.output_layer(self.stochasticity(v)) for _ in range(self.num_passes)]
+        zs = torch.stack(zs, dim = 1)
 
         # Teacher branch prediction has shape (batch, models, len, vocab)
         extra['teacher_predictions_lp'] = zs.clone().detach()
