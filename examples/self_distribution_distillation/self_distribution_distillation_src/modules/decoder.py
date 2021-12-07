@@ -467,8 +467,8 @@ class MimoTransformerDecoder(TransformerDecoder):
             # Ensemble the predictions (batch, seq, vocab)
             op, lps = self.ensemble(z)
 
-            # Add the separate predictions to extra
-            extra['teacher_predictions_lp'] = lps
+            # Add the separate predictions to extra (batch, models, len, vocab)
+            extra['teacher_predictions_lp'] = lps.permute(0, 2, 1, 3)
 
             return op, extra
 

@@ -65,13 +65,13 @@ class TerminationTransformerModel(TransformerModel):
             return_all_hiddens=return_all_hiddens,
         )
 
-        # In stochastic termination mode
-        if self.training: return decoder_out
+        # In stochastic termination mode or if only features are requested
+        if self.training or features_only: return decoder_out
 
         # In evaluation model average all predictions
         _, extra = decoder_out
 
-        # Get all output predictions
+        # Get all output predictions (batch, models, len, vocab)
         v = [self.decoder.manual_forward_output(op) for op in extra['termination_states']]
         v = self.decoder.output_layer(torch.stack(v, dim=1))
         v = torch.log_softmax(v, dim = -1)
@@ -79,8 +79,8 @@ class TerminationTransformerModel(TransformerModel):
         # Ensemble the predictions
         x = torch.logsumexp(v, dim = 1) - numpy.log(v.size(1))
 
-        # Save predictions
-        extra['intermediate_predictions'] = v
+        # Save predictions (batch, models, len, vocab)
+        extra['teacher_predictions_lp'] = v
 
         return x, extra
 

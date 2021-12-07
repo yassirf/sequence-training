@@ -2,15 +2,18 @@ import numpy as np
 import torch
 
 from .estimators import EnsembleCategoricals
+from .misc import process_outputs
 
 
-def compute_token_uncertainties(args, outputs):
+def compute_token_uncertainties(args, outputs, extra):
     """
     Function which computes token-level measures of uncertainty for Categorical model.
     :param args: specifies uncertainty estimation parameters
     :param outputs: List of Tensors of size [batch_size, seq_len, vocab] of Log Dirichlet Concentrations
     :return: Tensors of token level uncertainties of size [batch_size, seq_len]
     """
+    outputs = process_outputs(outputs, extra)
+
     estimator = EnsembleCategoricals()
     returns = estimator(args, outputs)
 
@@ -19,7 +22,7 @@ def compute_token_uncertainties(args, outputs):
            returns['mutual_information'].clamp_(min=0.0, max=None)
 
 
-def compute_sequence_uncertainties(args, outputs, output_ids, output_length, mask):
+def compute_sequence_uncertainties(args, outputs, extra, output_ids, output_length, mask):
     """
     Function which computes sequence-level measures of uncertainty for Categorical model.
     :param args: specifies uncertainty estimation parameters
@@ -29,6 +32,7 @@ def compute_sequence_uncertainties(args, outputs, output_ids, output_length, mas
     :param mask: Tensor of size [batch_size] of masked token ids
     :return: Tuple of tensor score, sentence log-probability and token log-probabilities
     """
+    outputs = process_outputs(outputs, extra)
 
     # Compute the expectation
     expected = torch.stack(outputs, dim=2)

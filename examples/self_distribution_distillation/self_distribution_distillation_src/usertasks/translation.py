@@ -100,6 +100,7 @@ class TranslationUncertaintyTask(TranslationTask):
 
         # Get all net_outputs and remove the extra information
         net_outputs = [model(**sample['net_input']) for model in models]
+        net_extra   = [extra for (z, extra) in net_outputs]
         net_outputs = [z for (z, extra) in net_outputs]
 
         # Restate the original inputs
@@ -115,12 +116,12 @@ class TranslationUncertaintyTask(TranslationTask):
 
         # Get token level uncertainties
         entropy_expected, expected_entropy, mutual_information = self.compute_token_uncertainties(
-            self.args, net_outputs
+            self.args, net_outputs, net_extra
         )
 
         # Get sentence level uncertainties
         scores, log_probs, token_log_probs = self.compute_sequence_uncertainties(
-            self.args, net_outputs, tokens, num_of_tokens, mask
+            self.args, net_outputs, net_extra, tokens, num_of_tokens, mask
         )
 
         # Mask out any uncertainty corresponding to padding
