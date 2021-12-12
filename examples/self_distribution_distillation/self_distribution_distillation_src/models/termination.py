@@ -92,24 +92,24 @@ def termination_get_attributes(args, half_termination = False):
 
 
 @register_model_architecture('termination_transformer', 'termination_transformer')
-def self_dirichlet_transformer(args):
+def termination_transformer(args):
     base_architecture(args)
     termination_get_attributes(args)
 
 
 @register_model_architecture('termination_transformer', 'termination_transformer_wmt_en_de_big')
-def self_dirichlet_transformer_wmt_en_de_big(args):
+def termination_transformer_wmt_en_de_big(args):
     transformer_wmt_en_de_big(args)
     termination_get_attributes(args)
 
 
 @register_model_architecture('termination_transformer', 'half_termination_transformer')
-def self_dirichlet_transformer(args):
+def half_termination_transformer(args):
     base_architecture(args)
     termination_get_attributes(args, half_termination = True)
 
 
 @register_model_architecture('termination_transformer', 'half_termination_transformer_wmt_en_de_big')
-def self_dirichlet_transformer_wmt_en_de_big(args):
+def half_termination_transformer_wmt_en_de_big(args):
     transformer_wmt_en_de_big(args)
     termination_get_attributes(args, half_termination=True)
