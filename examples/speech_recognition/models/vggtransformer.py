@@ -909,6 +909,27 @@ def base_architecture(args):
     args.transformer_context = getattr(args, "transformer_context", "None")
 
 
+@register_model_architecture("asr_vggtransformer", "vggtransformer_0")
+def vggtransformer_0(args):
+    args.input_feat_per_channel = getattr(args, "input_feat_per_channel", 80)
+    args.vggblock_enc_config = getattr(
+        args, "vggblock_enc_config", "[(64, 3, 2, 2, True), (128, 3, 2, 2, True)]"
+    )
+    args.transformer_enc_config = getattr(
+        args,
+        "transformer_enc_config",
+        "((256, 8, 1024, True, 0.10, 0.10, 0.10),) * 12",
+    )
+    args.enc_output_dim = getattr(args, "enc_output_dim", 256)
+    args.tgt_embed_dim = getattr(args, "tgt_embed_dim", 256)
+    args.conv_dec_config = getattr(args, "conv_dec_config", "((256, 3, True),) * 4")
+    args.transformer_dec_config = getattr(
+        args,
+        "transformer_dec_config",
+        "((256, 8, 1024, True, 0.10, 0.10, 0.10),) * 6",
+    )
+
+
 @register_model_architecture("asr_vggtransformer", "vggtransformer_1")
 def vggtransformer_1(args):
     args.input_feat_per_channel = getattr(args, "input_feat_per_channel", 80)
