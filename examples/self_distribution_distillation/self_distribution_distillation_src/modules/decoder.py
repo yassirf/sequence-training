@@ -144,21 +144,19 @@ class SelfGaussianTransformerDecoder(SelfDirichletTransformerDecoder):
             bias = bias,
         )
 
-        # For the creation of an additional output layer
-        self.log_scale = None
-
     def build_output_projection(self, cfg, dictionary, embed_tokens):
-        super(SelfGaussianTransformerDecoder, self).build_output_projection(
-            cfg = cfg,
-            dictionary = dictionary,
-            embed_tokens = embed_tokens,
-        )
-
+        
         # Create an additional scaling factor
         self.log_scale = nn.Linear(
             self.embed_tokens.weight.shape[1],
             self.embed_tokens.weight.shape[0],
             bias=cfg.bias,
+        )
+
+        super(SelfGaussianTransformerDecoder, self).build_output_projection(
+            cfg = cfg,
+            dictionary = dictionary,
+            embed_tokens = embed_tokens,
         )
 
     def forward(
