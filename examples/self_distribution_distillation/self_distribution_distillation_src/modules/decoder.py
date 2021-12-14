@@ -125,6 +125,97 @@ class SelfDirichletTransformerDecoder(TransformerDecoder):
         return z, extra
 
 
+class SelfGaussianTransformerDecoder(SelfDirichletTransformerDecoder):
+    def __init__(
+            self,
+            args,
+            dictionary,
+            embed_tokens,
+            no_encoder_attn=False,
+            output_projection=None,
+            bias=False
+    ):
+        super(SelfGaussianTransformerDecoder, self).__init__(
+            args = args,
+            dictionary = dictionary,
+            embed_tokens = embed_tokens,
+            no_encoder_attn = no_encoder_attn,
+            output_projection = output_projection,
+            bias = bias,
+        )
+
+        # For the creation of an additional output layer
+        self.log_scale = None
+
+    def build_output_projection(self, cfg, dictionary, embed_tokens):
+        super(SelfGaussianTransformerDecoder, self).build_output_projection(
+            cfg = cfg,
+            dictionary = dictionary,
+            embed_tokens = embed_tokens,
+        )
+
+        # Create an additional scaling factor
+        self.log_scale = nn.Linear(
+            self.embed_tokens.weight.shape[1],
+            self.embed_tokens.weight.shape[0],
+            bias=cfg.bias,
+        )
+
+    def forward(
+            self,
+            prev_output_tokens,
+            encoder_out: Optional[Dict[str, List[Tensor]]] = None,
+            incremental_state: Optional[Dict[str, Dict[str, Optional[Tensor]]]] = None,
+            features_only: bool = False,
+            full_context_alignment: bool = False,
+            alignment_layer: Optional[int] = None,
+            alignment_heads: Optional[int] = None,
+            src_lengths: Optional[Any] = None,
+            return_all_hiddens: bool = False,
+    ):
+        v, extra = super(SelfDirichletTransformerDecoder, self).forward(
+            prev_output_tokens = prev_output_tokens,
+            encoder_out = encoder_out,
+            incremental_state = incremental_state,
+            features_only = True,
+            full_context_alignment = full_context_alignment,
+            alignment_layer = alignment_layer,
+            alignment_heads = alignment_heads,
+            src_lengths = src_lengths,
+            return_all_hiddens = return_all_hiddens
+        )
+
+        # In standard forward pass setting
+        if features_only:
+            return v, extra
+
+        # Stochastic free last layer
+        z = self.output_layer(v)
+        s = self.log_scale(v)
+        s = torch.exp(s)
+
+        # Student scale predictions
+        extra['student_predictions_scale'] = s
+
+        # Do not perform subsequent code if in evaluation mode
+        if not self.training or self.num_passes < 1:
+            return z, extra
+
+        # Stochastic last layer
+        zs = [self.output_layer(self.stochasticity(v)) for _ in range(self.num_passes)]
+        zs = torch.stack(zs, dim = 1)
+
+        # Teacher branch prediction has shape (batch, models, len, vocab)
+        extra['teacher_predictions_lp'] = zs.clone().detach()
+        extra['student_predictions_mean'] = z
+
+        # Normalise stochastic teacher predictions and train those
+        z = torch.mean(zs, dim = 1)
+
+        # Return prediction and extra
+        return z, extra
+
+
 class TerminationTransformerDecoder(TransformerDecoder):
     def __init__(
             self,

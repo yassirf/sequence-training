@@ -918,7 +918,7 @@ def vggtransformer_0(args):
     args.transformer_enc_config = getattr(
         args,
         "transformer_enc_config",
-        "((256, 8, 1024, True, 0.10, 0.10, 0.10),) * 12",
+        "((256, 8, 1024, True, 0.10, 0.10, 0.10),) * 8",
     )
     args.enc_output_dim = getattr(args, "enc_output_dim", 256)
     args.tgt_embed_dim = getattr(args, "tgt_embed_dim", 256)
@@ -926,7 +926,7 @@ def vggtransformer_0(args):
     args.transformer_dec_config = getattr(
         args,
         "transformer_dec_config",
-        "((256, 8, 1024, True, 0.10, 0.10, 0.10),) * 6",
+        "((256, 8, 1024, True, 0.10, 0.10, 0.10),) * 4",
     )
 
 
