@@ -25,6 +25,8 @@ from .mimo import mimo1_naive_transformer, mimo2_naive_transformer, mimo3_naive_
 from .termination import TerminationTransformerModel
 from .termination import termination_transformer, termination_transformer_wmt_en_de_big
 from .termination import half_termination_transformer, half_termination_transformer_wmt_en_de_big
+from .gausstransformer import SelfGaussianTransformerModel
+from .gausstransformer import self_gaussian_transformer, self_gaussian_transformer_wmt_en_de_big
 
 __all__ = [
     'SelfDirichletTransformerModel',
@@ -39,4 +41,7 @@ __all__ = [
     'termination_transformer_wmt_en_de_big',
     'half_termination_transformer',
     'half_termination_transformer_wmt_en_de_big',
+    'SelfGaussianTransformerModel',
+    'self_gaussian_transformer',
+    'self_gaussian_transformer_wmt_en_de_big',
 ]
