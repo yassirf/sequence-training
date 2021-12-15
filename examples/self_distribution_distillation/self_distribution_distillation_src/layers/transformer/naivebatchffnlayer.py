@@ -4,17 +4,21 @@ import torch
 from torch import Tensor
 
 from fairseq.modules.transformer_layer import (
-    TransformerEncoderLayerBase,
-    TransformerDecoderLayerBase
+    TransformerConfig,
+    TransformerEncoderLayer,
+    TransformerDecoderLayer
 )
 from self_distribution_distillation_src.layers.ffn import (
     NaiveBatchEncoderFNNLayer, NaiveBatchDecoderFFNLayer
 )
 
 
-class NaiveBatchFFNTransformerEncoderLayerBase(TransformerEncoderLayerBase):
-    def __init__(self, cfg):
-        super(NaiveBatchFFNTransformerEncoderLayerBase, self).__init__(cfg = cfg)
+class NaiveBatchFFNTransformerEncoderLayer(TransformerEncoderLayer):
+    def __init__(self, args):
+        super(NaiveBatchFFNTransformerEncoderLayer, self).__init__(args = args)
+
+        # Get hierarchical config
+        cfg = TransformerConfig.from_namespace(args)
 
         # Get dropout probability
         self.activation_dropout_p = cfg.activation_dropout
@@ -99,14 +103,17 @@ class NaiveBatchFFNTransformerEncoderLayerBase(TransformerEncoderLayerBase):
         return x
 
 
-class NaiveBatchFFNTransformerDecoderLayerBase(TransformerDecoderLayerBase):
-    def __init__(self, cfg, no_encoder_attn=False, add_bias_kv=False, add_zero_attn=False):
-        super(NaiveBatchFFNTransformerDecoderLayerBase, self).__init__(
-            cfg = cfg,
+class NaiveBatchFFNTransformerDecoderLayer(TransformerDecoderLayer):
+    def __init__(self, args, no_encoder_attn=False, add_bias_kv=False, add_zero_attn=False):
+        super(NaiveBatchFFNTransformerDecoderLayer, self).__init__(
+            args = args,
             no_encoder_attn = no_encoder_attn,
             add_bias_kv = add_bias_kv,
             add_zero_attn = add_zero_attn,
         )
+
+        # Get hierarchical config
+        cfg = TransformerConfig.from_namespace(args)
 
         # Get dropout probability
         self.activation_dropout_p = cfg.activation_dropout

@@ -4,7 +4,7 @@ from fairseq.models import (
     register_model_architecture
 )
 from fairseq.models.transformer import (
-    TransformerModelBase,
+    TransformerModel,
     base_architecture,
     transformer_wmt_en_de_big
 )
@@ -17,23 +17,23 @@ from self_distribution_distillation_src.modules.decoder import (
 
 
 @register_model('naive_batch_ffn_transformer')
-class NaiveBatchFFNTransformerModel(TransformerModelBase):
+class NaiveBatchFFNTransformerModel(TransformerModel):
 
     @classmethod
-    def build_encoder(cls, cfg, src_dict, embed_tokens):
+    def build_encoder(cls, args, src_dict, embed_tokens):
         return NaiveBatchFNNTransformerEncoder(
-            cfg = cfg,
+            args = args,
             dictionary = src_dict,
             embed_tokens = embed_tokens
         )
 
     @classmethod
-    def build_decoder(cls, cfg, tgt_dict, embed_tokens):
+    def build_decoder(cls, args, tgt_dict, embed_tokens):
         return NaiveBatchFNNTransformerDecoder(
-            cfg = cfg,
+            args = args,
             dictionary = tgt_dict,
             embed_tokens = embed_tokens,
-            no_encoder_attn = cfg.no_cross_attention,
+            no_encoder_attn = args.no_cross_attention,
             output_projection=None,
         )
 

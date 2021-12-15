@@ -1,16 +1,20 @@
 
+from fairseq.models.transformer import TransformerConfig
 from .naivebatchffnlayer import (
-    NaiveBatchFFNTransformerEncoderLayerBase,
-    NaiveBatchFFNTransformerDecoderLayerBase
+    NaiveBatchFFNTransformerEncoderLayer,
+    NaiveBatchFFNTransformerDecoderLayer
 )
 from self_distribution_distillation_src.layers.ffn import (
     BatchEncoderFNNLayer, BatchDecoderFFNLayer
 )
 
 
-class BatchFFNTransformerEncoderLayerBase(NaiveBatchFFNTransformerEncoderLayerBase):
-    def __init__(self, cfg):
-        super(BatchFFNTransformerEncoderLayerBase, self).__init__(cfg = cfg)
+class BatchFFNTransformerEncoderLayer(NaiveBatchFFNTransformerEncoderLayer):
+    def __init__(self, args):
+        super(BatchFFNTransformerEncoderLayer, self).__init__(args = args)
+
+        # Get hierarchical config
+        cfg = TransformerConfig.from_namespace(args)
 
         # Create a naive batch fnn
         self.ffn = BatchEncoderFNNLayer(
@@ -24,14 +28,17 @@ class BatchFFNTransformerEncoderLayerBase(NaiveBatchFFNTransformerEncoderLayerBa
         )
 
 
-class BatchFFNTransformerDecoderLayerBase(NaiveBatchFFNTransformerDecoderLayerBase):
-    def __init__(self, cfg, no_encoder_attn = False, add_bias_kv = False, add_zero_attn = False):
-        super(BatchFFNTransformerDecoderLayerBase, self).__init__(
-            cfg = cfg,
+class BatchFFNTransformerDecoderLayer(NaiveBatchFFNTransformerDecoderLayer):
+    def __init__(self, args, no_encoder_attn = False, add_bias_kv = False, add_zero_attn = False):
+        super(BatchFFNTransformerDecoderLayer, self).__init__(
+            args = args,
             no_encoder_attn = no_encoder_attn,
             add_bias_kv = add_bias_kv,
             add_zero_attn = add_zero_attn,
         )
+
+        # Get hierarchical config
+        cfg = TransformerConfig.from_namespace(args)
 
         # Create a naive batch fnn
         self.ffn = BatchDecoderFFNLayer(

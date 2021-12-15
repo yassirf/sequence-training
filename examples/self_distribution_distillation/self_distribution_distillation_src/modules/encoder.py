@@ -1,23 +1,24 @@
 
 from fairseq.distributed import fsdp_wrap
 from fairseq.modules.checkpoint_activations import checkpoint_wrapper
-from fairseq.models.transformer import TransformerEncoderBase
+from fairseq.models.transformer import TransformerConfig, TransformerEncoder
 from self_distribution_distillation_src.layers.transformer import (
-    NaiveBatchFFNTransformerEncoderLayerBase,
-    BatchFFNTransformerEncoderLayerBase,
+    NaiveBatchFFNTransformerEncoderLayer,
+    BatchFFNTransformerEncoderLayer,
 )
 
 
-class NaiveBatchFNNTransformerEncoder(TransformerEncoderBase):
-    def __init__(self, cfg, dictionary, embed_tokens):
+class NaiveBatchFNNTransformerEncoder(TransformerEncoder):
+    def __init__(self, args, dictionary, embed_tokens):
         super(NaiveBatchFNNTransformerEncoder, self).__init__(
-            cfg = cfg,
+            args = args,
             dictionary = dictionary,
             embed_tokens = embed_tokens,
         )
 
-    def build_encoder_layer(self, cfg):
-        layer = NaiveBatchFFNTransformerEncoderLayerBase(cfg)
+    def build_encoder_layer(self, args):
+        cfg = TransformerConfig.from_namespace(args)
+        layer = NaiveBatchFFNTransformerEncoderLayer(cfg)
         checkpoint = cfg.checkpoint_activations
         if checkpoint:
             offload_to_cpu = cfg.offload_activations
@@ -29,16 +30,17 @@ class NaiveBatchFNNTransformerEncoder(TransformerEncoderBase):
         return layer
 
 
-class BatchFNNTransformerEncoder(TransformerEncoderBase):
-    def __init__(self, cfg, dictionary, embed_tokens):
+class BatchFNNTransformerEncoder(TransformerEncoder):
+    def __init__(self, args, dictionary, embed_tokens):
         super(BatchFNNTransformerEncoder, self).__init__(
-            cfg = cfg,
+            args = args,
             dictionary = dictionary,
             embed_tokens = embed_tokens,
         )
 
-    def build_encoder_layer(self, cfg):
-        layer = BatchFFNTransformerEncoderLayerBase(cfg)
+    def build_encoder_layer(self, args):
+        cfg = TransformerConfig.from_namespace(args)
+        layer = BatchFFNTransformerEncoderLayer(cfg)
         checkpoint = cfg.checkpoint_activations
         if checkpoint:
             offload_to_cpu = cfg.offload_activations
