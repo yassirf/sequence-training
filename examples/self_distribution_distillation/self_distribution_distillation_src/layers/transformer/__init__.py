@@ -1,13 +1,13 @@
 
-from .naivebatchffnlayer import NaiveBatchFFNTransformerEncoderLayerBase
-from .naivebatchffnlayer import NaiveBatchFFNTransformerDecoderLayerBase
-from .batchffnlayer import BatchFFNTransformerEncoderLayerBase
-from .batchffnlayer import BatchFFNTransformerDecoderLayerBase
+from .naivebatchffnlayer import NaiveBatchFFNTransformerEncoderLayer
+from .naivebatchffnlayer import NaiveBatchFFNTransformerDecoderLayer
+from .batchffnlayer import BatchFFNTransformerEncoderLayer
+from .batchffnlayer import BatchFFNTransformerDecoderLayer
 
 
 __all__ = [
-    'NaiveBatchFFNTransformerEncoderLayerBase',
-    'NaiveBatchFFNTransformerDecoderLayerBase',
-    'BatchFFNTransformerEncoderLayerBase',
-    'BatchFFNTransformerDecoderLayerBase',
+    'NaiveBatchFFNTransformerEncoderLayer',
+    'NaiveBatchFFNTransformerDecoderLayer',
+    'BatchFFNTransformerEncoderLayer',
+    'BatchFFNTransformerDecoderLayer',
 ]

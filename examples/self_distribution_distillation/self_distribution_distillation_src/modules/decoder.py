@@ -7,37 +7,36 @@ from typing import Any, Dict, List, Optional
 
 from self_distribution_distillation_src.modules.noise import MultiplicativeGaussianLayer
 from fairseq import utils
-from fairseq.models.transformer import TransformerDecoder
 from fairseq.modules import AdaptiveSoftmax, BaseLayer
-
 from fairseq.distributed import fsdp_wrap
 from fairseq.modules.checkpoint_activations import checkpoint_wrapper
-from fairseq.models.transformer import TransformerDecoderBase
+from fairseq.models.transformer import TransformerConfig, TransformerDecoder
 from self_distribution_distillation_src.layers.transformer import (
-    NaiveBatchFFNTransformerDecoderLayerBase,
-    BatchFFNTransformerDecoderLayerBase,
+    NaiveBatchFFNTransformerDecoderLayer,
+    BatchFFNTransformerDecoderLayer,
 )
 
 
-class NaiveBatchFNNTransformerDecoder(TransformerDecoderBase):
+class NaiveBatchFNNTransformerDecoder(TransformerDecoder):
     def __init__(
             self,
-            cfg,
+            args,
             dictionary,
             embed_tokens,
             no_encoder_attn=False,
             output_projection=None,
     ):
         super(NaiveBatchFNNTransformerDecoder, self).__init__(
-            cfg=cfg,
+            args=args,
             dictionary=dictionary,
             embed_tokens=embed_tokens,
             no_encoder_attn=no_encoder_attn,
             output_projection=output_projection,
         )
 
-    def build_decoder_layer(self, cfg, no_encoder_attn=False):
-        layer = NaiveBatchFFNTransformerDecoderLayerBase(cfg)
+    def build_decoder_layer(self, args, no_encoder_attn=False):
+        cfg = TransformerConfig.from_namespace(args)
+        layer = NaiveBatchFFNTransformerDecoderLayer(cfg)
         checkpoint = cfg.checkpoint_activations
         if checkpoint:
             offload_to_cpu = cfg.offload_activations
@@ -49,25 +48,26 @@ class NaiveBatchFNNTransformerDecoder(TransformerDecoderBase):
         return layer
 
 
-class BatchFNNTransformerDecoder(TransformerDecoderBase):
+class BatchFNNTransformerDecoder(TransformerDecoder):
     def __init__(
             self,
-            cfg,
+            args,
             dictionary,
             embed_tokens,
             no_encoder_attn=False,
             output_projection=None,
     ):
         super(BatchFNNTransformerDecoder, self).__init__(
-            cfg=cfg,
+            args=args,
             dictionary=dictionary,
             embed_tokens=embed_tokens,
             no_encoder_attn=no_encoder_attn,
             output_projection=output_projection,
         )
 
-    def build_decoder_layer(self, cfg, no_encoder_attn=False):
-        layer = BatchFFNTransformerDecoderLayerBase(cfg)
+    def build_decoder_layer(self, args, no_encoder_attn=False):
+        cfg = TransformerConfig.from_namespace(args)
+        layer = BatchFFNTransformerDecoderLayer(cfg)
         checkpoint = cfg.checkpoint_activations
         if checkpoint:
             offload_to_cpu = cfg.offload_activations
@@ -111,36 +111,36 @@ class SelfDirichletTransformerDecoder(TransformerDecoder):
         # Use bias in output projection
         self.bias = bool(bias)
 
-    def build_output_projection(self, cfg, dictionary, embed_tokens):
-        if cfg.adaptive_softmax_cutoff is not None:
+    def build_output_projection(self, args, dictionary, embed_tokens):
+        if args.adaptive_softmax_cutoff is not None:
             self.adaptive_softmax = AdaptiveSoftmax(
                 len(dictionary),
                 self.output_embed_dim,
-                utils.eval_str_list(cfg.adaptive_softmax_cutoff, type=int),
-                dropout=cfg.adaptive_softmax_dropout,
-                adaptive_inputs=embed_tokens if cfg.tie_adaptive_weights else None,
-                factor=cfg.adaptive_softmax_factor,
-                tie_proj=cfg.tie_adaptive_proj,
+                utils.eval_str_list(args.adaptive_softmax_cutoff, type=int),
+                dropout=args.adaptive_softmax_dropout,
+                adaptive_inputs=embed_tokens if args.tie_adaptive_weights else None,
+                factor=args.adaptive_softmax_factor,
+                tie_proj=args.tie_adaptive_proj,
             )
         elif self.share_input_output_embed:
             self.output_projection = nn.Linear(
                 self.embed_tokens.weight.shape[1],
                 self.embed_tokens.weight.shape[0],
-                bias=cfg.bias,
+                bias=args.bias,
             )
             self.output_projection.weight = self.embed_tokens.weight
         else:
             self.output_projection = nn.Linear(
-                self.output_embed_dim, len(dictionary), bias=cfg.bias
+                self.output_embed_dim, len(dictionary), bias=args.bias
             )
             nn.init.normal_(
                 self.output_projection.weight, mean=0, std=self.output_embed_dim ** -0.5
             )
-        num_base_layers = cfg.base_layers
+        num_base_layers = args.base_layers
         for i in range(num_base_layers):
             self.layers.insert(
-                ((i + 1) * cfg.decoder.layers) // (num_base_layers + 1),
-                BaseLayer(cfg),
+                ((i + 1) * args.decoder.layers) // (num_base_layers + 1),
+                BaseLayer(args),
             )
 
     def forward(
@@ -212,17 +212,17 @@ class SelfGaussianTransformerDecoder(SelfDirichletTransformerDecoder):
             bias = bias,
         )
 
-    def build_output_projection(self, cfg, dictionary, embed_tokens):
+    def build_output_projection(self, args, dictionary, embed_tokens):
         
         # Create an additional scaling factor
         self.log_scale = nn.Linear(
             self.output_embed_dim,
             len(dictionary),
-            bias=cfg.bias
+            bias=args.bias
         )
 
         super(SelfGaussianTransformerDecoder, self).build_output_projection(
-            cfg = cfg,
+            args = args,
             dictionary = dictionary,
             embed_tokens = embed_tokens,
         )
@@ -317,36 +317,36 @@ class TerminationTransformerDecoder(TransformerDecoder):
         # Use bias in output projection
         self.bias = bool(bias)
 
-    def build_output_projection(self, cfg, dictionary, embed_tokens):
-        if cfg.adaptive_softmax_cutoff is not None:
+    def build_output_projection(self, args, dictionary, embed_tokens):
+        if args.adaptive_softmax_cutoff is not None:
             self.adaptive_softmax = AdaptiveSoftmax(
                 len(dictionary),
                 self.output_embed_dim,
-                utils.eval_str_list(cfg.adaptive_softmax_cutoff, type=int),
-                dropout=cfg.adaptive_softmax_dropout,
-                adaptive_inputs=embed_tokens if cfg.tie_adaptive_weights else None,
-                factor=cfg.adaptive_softmax_factor,
-                tie_proj=cfg.tie_adaptive_proj,
+                utils.eval_str_list(args.adaptive_softmax_cutoff, type=int),
+                dropout=args.adaptive_softmax_dropout,
+                adaptive_inputs=embed_tokens if args.tie_adaptive_weights else None,
+                factor=args.adaptive_softmax_factor,
+                tie_proj=args.tie_adaptive_proj,
             )
         elif self.share_input_output_embed:
             self.output_projection = nn.Linear(
                 self.embed_tokens.weight.shape[1],
                 self.embed_tokens.weight.shape[0],
-                bias=cfg.bias,
+                bias=args.bias,
             )
             self.output_projection.weight = self.embed_tokens.weight
         else:
             self.output_projection = nn.Linear(
-                self.output_embed_dim, len(dictionary), bias=cfg.bias
+                self.output_embed_dim, len(dictionary), bias=args.bias
             )
             nn.init.normal_(
                 self.output_projection.weight, mean=0, std=self.output_embed_dim ** -0.5
             )
-        num_base_layers = cfg.base_layers
+        num_base_layers = args.base_layers
         for i in range(num_base_layers):
             self.layers.insert(
-                ((i + 1) * cfg.decoder.layers) // (num_base_layers + 1),
-                BaseLayer(cfg),
+                ((i + 1) * args.decoder.layers) // (num_base_layers + 1),
+                BaseLayer(args),
             )
 
     def extract_features_scriptable(
@@ -522,24 +522,24 @@ class MimoTransformerDecoder(TransformerDecoder):
         # Letting output heads and embedding share weights or not
         self.naive = naive
 
-    def build_output_projection(self, cfg, dictionary, embed_tokens):
-        if cfg.adaptive_softmax_cutoff is not None:
+    def build_output_projection(self, args, dictionary, embed_tokens):
+        if args.adaptive_softmax_cutoff is not None:
             self.adaptive_softmax = AdaptiveSoftmax(
-                len(dictionary) * cfg.num_heads,
+                len(dictionary) * args.num_heads,
                 self.output_embed_dim,
-                utils.eval_str_list(cfg.adaptive_softmax_cutoff, type=int),
-                dropout=cfg.adaptive_softmax_dropout,
-                adaptive_inputs=embed_tokens if cfg.tie_adaptive_weights else None,
-                factor=cfg.adaptive_softmax_factor,
-                tie_proj=cfg.tie_adaptive_proj,
+                utils.eval_str_list(args.adaptive_softmax_cutoff, type=int),
+                dropout=args.adaptive_softmax_dropout,
+                adaptive_inputs=embed_tokens if args.tie_adaptive_weights else None,
+                factor=args.adaptive_softmax_factor,
+                tie_proj=args.tie_adaptive_proj,
             )
-        elif self.share_input_output_embed and not cfg.naive_mimo:
+        elif self.share_input_output_embed and not args.naive_mimo:
             # Build a list of linear layers
             modulelist = [nn.Linear(
                 self.embed_tokens.weight.shape[1],
                 self.embed_tokens.weight.shape[0],
-                bias=cfg.bias,
-            ) for _ in range(cfg.num_heads)]
+                bias=args.bias,
+            ) for _ in range(args.num_heads)]
 
             # Share with embedding token weights
             for output_projection in modulelist:
@@ -549,16 +549,16 @@ class MimoTransformerDecoder(TransformerDecoder):
             self.output_projection = Concatenator(nn.ModuleList(modulelist))
         else:
             self.output_projection = nn.Linear(
-                self.output_embed_dim, len(dictionary) * cfg.num_heads, bias=cfg.bias
+                self.output_embed_dim, len(dictionary) * args.num_heads, bias=args.bias
             )
             nn.init.normal_(
                 self.output_projection.weight, mean=0, std=self.output_embed_dim ** -0.5
             )
-        num_base_layers = cfg.base_layers
+        num_base_layers = args.base_layers
         for i in range(num_base_layers):
             self.layers.insert(
-                ((i + 1) * cfg.decoder.layers) // (num_base_layers + 1),
-                BaseLayer(cfg),
+                ((i + 1) * args.decoder.layers) // (num_base_layers + 1),
+                BaseLayer(args),
             )
 
     def reformat_output(self, x):
