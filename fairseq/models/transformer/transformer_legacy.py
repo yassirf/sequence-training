@@ -216,6 +216,8 @@ def base_architecture(args):
     args.decoder_layers_to_keep = getattr(args, "decoder_layers_to_keep", None)
     args.encoder_layerdrop = getattr(args, "encoder_layerdrop", 0)
     args.decoder_layerdrop = getattr(args, "decoder_layerdrop", 0)
+    args.encoder_num_ffns = getattr(args, "encoder_num_ffns", 1)
+    args.decoder_num_ffns = getattr(args, "decoder_num_ffns", 1)
     args.quant_noise_pq = getattr(args, "quant_noise_pq", 0)
     args.quant_noise_pq_block_size = getattr(args, "quant_noise_pq_block_size", 8)
     args.quant_noise_scalar = getattr(args, "quant_noise_scalar", 0)

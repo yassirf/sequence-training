@@ -43,8 +43,14 @@ class EncDecBaseConfig(FairseqDataclass):
     learned_pos: bool = field(
         default=False, metadata={"help": "use learned positional embeddings"}
     )
+    # args for mimo-style batch methods
+    num_ffns: int = field(
+        default=1, metadata={"help": "number of separate ffns similar to mimo"}
+    )
     # args for "Reducing Transformer Depth on Demand with Structured Dropout" (Fan et al., 2019)
-    layerdrop: float = field(default=0, metadata={"help": "LayerDrop probability"})
+    layerdrop: float = field(
+        default=0, metadata={"help": "LayerDrop probability"}
+    )
     layers_to_keep: Optional[List[int]] = field(
         default=None, metadata={"help": "which layers to *keep* when pruning"}
     )

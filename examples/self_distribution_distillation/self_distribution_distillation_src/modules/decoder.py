@@ -10,6 +10,74 @@ from fairseq import utils
 from fairseq.models.transformer import TransformerDecoder
 from fairseq.modules import AdaptiveSoftmax, BaseLayer
 
+from fairseq.distributed import fsdp_wrap
+from fairseq.modules.checkpoint_activations import checkpoint_wrapper
+from fairseq.models.transformer import TransformerDecoderBase
+from self_distribution_distillation_src.layers.transformer import (
+    NaiveBatchFFNTransformerDecoderLayerBase,
+    BatchFFNTransformerDecoderLayerBase,
+)
+
+
+class NaiveBatchFNNTransformerDecoder(TransformerDecoderBase):
+    def __init__(
+            self,
+            cfg,
+            dictionary,
+            embed_tokens,
+            no_encoder_attn=False,
+            output_projection=None,
+    ):
+        super(NaiveBatchFNNTransformerDecoder, self).__init__(
+            cfg=cfg,
+            dictionary=dictionary,
+            embed_tokens=embed_tokens,
+            no_encoder_attn=no_encoder_attn,
+            output_projection=output_projection,
+        )
+
+    def build_decoder_layer(self, cfg, no_encoder_attn=False):
+        layer = NaiveBatchFFNTransformerDecoderLayerBase(cfg)
+        checkpoint = cfg.checkpoint_activations
+        if checkpoint:
+            offload_to_cpu = cfg.offload_activations
+            layer = checkpoint_wrapper(layer, offload_to_cpu=offload_to_cpu)
+        # if we are checkpointing, enforce that FSDP always wraps the
+        # checkpointed layer, regardless of layer size
+        min_params_to_wrap = cfg.min_params_to_wrap if not checkpoint else 0
+        layer = fsdp_wrap(layer, min_num_params=min_params_to_wrap)
+        return layer
+
+
+class BatchFNNTransformerDecoder(TransformerDecoderBase):
+    def __init__(
+            self,
+            cfg,
+            dictionary,
+            embed_tokens,
+            no_encoder_attn=False,
+            output_projection=None,
+    ):
+        super(BatchFNNTransformerDecoder, self).__init__(
+            cfg=cfg,
+            dictionary=dictionary,
+            embed_tokens=embed_tokens,
+            no_encoder_attn=no_encoder_attn,
+            output_projection=output_projection,
+        )
+
+    def build_decoder_layer(self, cfg, no_encoder_attn=False):
+        layer = BatchFFNTransformerDecoderLayerBase(cfg)
+        checkpoint = cfg.checkpoint_activations
+        if checkpoint:
+            offload_to_cpu = cfg.offload_activations
+            layer = checkpoint_wrapper(layer, offload_to_cpu=offload_to_cpu)
+        # if we are checkpointing, enforce that FSDP always wraps the
+        # checkpointed layer, regardless of layer size
+        min_params_to_wrap = cfg.min_params_to_wrap if not checkpoint else 0
+        layer = fsdp_wrap(layer, min_num_params=min_params_to_wrap)
+        return layer
+
 
 class Concatenator(nn.Module):
     def __init__(self, modulelist: nn.ModuleList):
@@ -148,9 +216,9 @@ class SelfGaussianTransformerDecoder(SelfDirichletTransformerDecoder):
         
         # Create an additional scaling factor
         self.log_scale = nn.Linear(
-            self.embed_tokens.weight.shape[1],
-            self.embed_tokens.weight.shape[0],
-            bias=cfg.bias,
+            self.output_embed_dim,
+            len(dictionary),
+            bias=cfg.bias
         )
 
         super(SelfGaussianTransformerDecoder, self).build_output_projection(
