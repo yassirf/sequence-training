@@ -45,14 +45,14 @@ def batch1_ffn_transformer(args):
 
 @register_model_architecture('batch_ffn_transformer', 'batch2_ffn_transformer')
 def batch2_ffn_transformer(args):
-    base_architecture(args)
     args.encoder_num_ffns = getattr(args, "encoder_num_ffns", 2)
     args.decoder_num_ffns = getattr(args, "decoder_num_ffns", 2)
+    base_architecture(args)
 
 
 @register_model_architecture('batch_ffn_transformer', 'batch3_ffn_transformer')
 def batch3_ffn_transformer(args):
-    base_architecture(args)
     args.encoder_num_ffns = getattr(args, "encoder_num_ffns", 3)
     args.decoder_num_ffns = getattr(args, "decoder_num_ffns", 3)
+    base_architecture(args)
 
