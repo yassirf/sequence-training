@@ -20,11 +20,6 @@ from self_distribution_distillation_src.modules.decoder import (
 class NaiveBatchFFNTransformerModel(TransformerModelBase):
 
     @classmethod
-    def add_args(cls, parser):
-        TransformerModelBase.add_args(parser)
-        parser.add_argument('--num-heads', type=int, default=2)
-
-    @classmethod
     def build_encoder(cls, cfg, src_dict, embed_tokens):
         return NaiveBatchFNNTransformerEncoder(
             cfg = cfg,
