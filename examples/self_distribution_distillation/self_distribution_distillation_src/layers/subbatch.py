@@ -35,7 +35,7 @@ class BatchLayer(nn.Module):
         """
 
         # Get batch size
-        b, f = x.size(0), self.num_models
+        b, f = x.size(1), self.num_models
 
         # In training mode we split the batch
         if self.training:
