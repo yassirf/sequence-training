@@ -39,19 +39,19 @@ class NaiveBatchFFNTransformerModel(TransformerModelBase):
 
 
 @register_model_architecture('naive_batch_ffn_transformer', 'naive_batch1_ffn_transformer')
-def batch1_transformer(args):
+def naive_batch1_ffn_transformer(args):
     base_architecture(args)
 
 
 @register_model_architecture('naive_batch_ffn_transformer', 'naive_batch2_ffn_transformer')
-def batch2_transformer(args):
+def naive_batch2_ffn_transformer(args):
     base_architecture(args)
     args.encoder_num_ffns = getattr(args, "encoder_num_ffns", 2)
     args.decoder_num_ffns = getattr(args, "decoder_num_ffns", 2)
 
 
 @register_model_architecture('naive_batch_ffn_transformer', 'naive_batch3_ffn_transformer')
-def batch3_transformer(args):
+def naive_batch3_ffn_transformer(args):
     base_architecture(args)
     args.encoder_num_ffns = getattr(args, "encoder_num_ffns", 3)
     args.decoder_num_ffns = getattr(args, "decoder_num_ffns", 3)
