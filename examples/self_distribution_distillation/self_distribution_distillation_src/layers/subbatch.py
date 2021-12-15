@@ -3,14 +3,14 @@ import torch.nn as nn
 
 
 class NaiveBatchLayer(nn.Module):
-    def __init__(self, cfg, modellist: nn.ModuleList):
+    def __init__(self, cfg, model_list: nn.ModuleList):
         super(NaiveBatchLayer, self).__init__()
 
         # Number of models
-        self.num_models = len(modellist)
+        self.num_models = len(model_list)
 
         # Collection of separate parallel models
-        self.model_list = modellist
+        self.model_list = model_list
 
     def forward(self, x):
         # At both training inference time we compute the output of all ffns and average
@@ -19,14 +19,14 @@ class NaiveBatchLayer(nn.Module):
 
 
 class BatchLayer(nn.Module):
-    def __init__(self, cfg, modellist: nn.ModuleList):
+    def __init__(self, cfg, model_list: nn.ModuleList):
         super(BatchLayer, self).__init__()
 
         # Number of models
-        self.num_models = len(modellist)
+        self.num_models = len(model_list)
 
         # Collection of separate parallel models
-        self.model_list = modellist
+        self.model_list = model_list
 
     def forward(self, x):
         """
