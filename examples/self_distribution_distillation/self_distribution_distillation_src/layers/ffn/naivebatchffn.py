@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from self_distribution_distillation_src.layers.ffn.fnn import (
+from self_distribution_distillation_src.layers.ffn import (
     EncoderFNNLayer, DecoderFFNLayer
 )
 from self_distribution_distillation_src.layers.subbatch import (

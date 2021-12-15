@@ -7,7 +7,7 @@ from fairseq.modules.transformer_layer import (
     TransformerEncoderLayerBase,
     TransformerDecoderLayerBase
 )
-from self_distribution_distillation_src.layers.ffn.naivebatchffn import (
+from self_distribution_distillation_src.layers.ffn import (
     NaiveBatchEncoderFNNLayer, NaiveBatchDecoderFFNLayer
 )
 

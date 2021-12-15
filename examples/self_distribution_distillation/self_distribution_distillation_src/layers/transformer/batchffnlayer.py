@@ -3,7 +3,7 @@ from .naivebatchffnlayer import (
     NaiveBatchFFNTransformerEncoderLayerBase,
     NaiveBatchFFNTransformerDecoderLayerBase
 )
-from self_distribution_distillation_src.layers.ffn.batchffn import (
+from self_distribution_distillation_src.layers.ffn import (
     BatchEncoderFNNLayer, BatchDecoderFFNLayer
 )
 
