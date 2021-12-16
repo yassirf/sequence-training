@@ -11,7 +11,7 @@ def compute_token_gaussian_uncertainties(args, outputs, extra):
     :param outputs: List of Tensors of size [batch_size, seq_len, vocab] of Log Dirichlet Concentrations
     :return: Tensors of token level uncertainties of size [batch_size, seq_len]
     """
-    outputs = [(op, ex['student_predictions_scale']) for op, ex in enumerate(outputs, extra)]
+    outputs = [(op, ex['student_predictions_scale']) for op, ex in zip(outputs, extra)]
 
     estimator = EnsembleGaussianCategoricals()
     returns = estimator(args, outputs)
@@ -33,7 +33,7 @@ def compute_sequence_gaussian_uncertainties(args, outputs, extra, output_ids, ou
     """
 
     # Get output tuples
-    outputs = [(op, ex['student_predictions_scale']) for op, ex in enumerate(outputs, extra)]
+    outputs = [(op, ex['student_predictions_scale']) for op, ex in zip(outputs, extra)]
 
     # Get samples
     outputs = EnsembleGaussianCategoricals.sample(args, outputs)
