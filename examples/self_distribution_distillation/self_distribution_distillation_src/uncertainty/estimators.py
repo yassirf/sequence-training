@@ -1,7 +1,8 @@
 import numpy as np
 import torch
+from torch.distributions import normal
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 
 class BaseClass(object):
@@ -111,3 +112,31 @@ class EnsembleDirichlets(EnsembleCategoricals):
         returns['mutual_information'] = returns['entropy_expected'] - returns['expected_entropy']
         return returns
 
+
+class EnsembleGaussianCategoricals(EnsembleCategoricals):
+    def __init__(self):
+        super(EnsembleGaussianCategoricals, self).__init__()
+
+    @staticmethod
+    def sample(args, outputs: List[Tuple[torch.Tensor]]) -> List[torch.Tensor]:
+
+        # Number of samples to draw
+        num_samples = getattr(args, "ood_num_samples")
+
+        # Get gaussian distributions
+        gaussians = [normal.Normal(*op) for op in outputs]
+
+        # Get logit samples
+        samples = [g.sample() for _ in range(num_samples) for g in gaussians]
+
+        return samples
+
+    @torch.no_grad()
+    def __call__(self, args, outputs: List[Tuple[torch.Tensor]]) -> Dict:
+
+        # Draw logit samples from gaussian model
+        samples = self.sample(args, outputs)
+
+        return super(EnsembleGaussianCategoricals, self).__call__(
+            args, samples
+        )

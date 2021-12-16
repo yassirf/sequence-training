@@ -1,10 +1,12 @@
 from typing import List, Dict
 
 
-def process_outputs(outputs, extra: List[Dict]):
+def process_outputs(outputs, extra: List[Dict] = None):
     """
     If extra has 'teacher_predictions_lp' then access these.
     """
+    if extra is None: return outputs
+
     check = 'teacher_predictions_lp' in extra[0]
 
     # Returns a list of predictions

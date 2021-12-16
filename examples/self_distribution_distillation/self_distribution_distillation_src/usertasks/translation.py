@@ -11,6 +11,8 @@ from self_distribution_distillation_src.uncertainty.categorical import (
     compute_token_uncertainties, compute_sequence_uncertainties)
 from self_distribution_distillation_src.uncertainty.dirichlet import (
     compute_token_dirichlet_uncertainties, compute_sequence_dirichlet_uncertainties)
+from self_distribution_distillation_src.uncertainty.gaussian import (
+    compute_token_gaussian_uncertainties, compute_sequence_gaussian_uncertainties)
 
 
 @dataclass
@@ -22,6 +24,10 @@ class TranslationUncertaintyConfig(TranslationConfig):
     uncertainty_class: str = field(
         default='categorical',
         metadata={"help": "Nature of model output"}
+    )
+    ood_num_samples: int = field(
+        default=25,
+        metadata={"help": "Number of samples to draw to compute uncertainties"}
     )
     ood_temperature: float = field(
         default=1.0,
@@ -48,6 +54,9 @@ class TranslationUncertaintyTask(TranslationTask):
         if args.uncertainty_class.startswith("dirichlet"):
             self.compute_token_uncertainties = compute_token_dirichlet_uncertainties
             self.compute_sequence_uncertainties = compute_sequence_dirichlet_uncertainties
+        elif args.uncertainty_class.startswith("gaussian"):
+            self.compute_token_uncertainties = compute_token_gaussian_uncertainties
+            self.compute_sequence_uncertainties = compute_sequence_gaussian_uncertainties
 
     @classmethod
     def add_args(cls, parser):
@@ -60,7 +69,9 @@ class TranslationUncertaintyTask(TranslationTask):
         parser.add_argument('--compute_uncertainty', type=int, default=0,
                             help="Whether or not to compute uncertainty")
         parser.add_argument('--uncertainty_class', type=str, default='categorical',
-                            choices=['categorical', 'dirichlet'], help="Type of model output")
+                            choices=['categorical', 'dirichlet', 'gaussian'], help="Type of model output")
+        parser.add_argument('--ood_num_samples', type=int, default=25,
+                            help="Number of samples to draw to compute uncertainties")
         parser.add_argument('--ood_temperature', type=float, default=1.0,
                             help="Temperature scaling of categorical ensemble")
 
