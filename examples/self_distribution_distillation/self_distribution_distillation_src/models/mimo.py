@@ -79,3 +79,20 @@ def mimo3_naive_transformer(args):
     mimo_get_attributes(args, 3, True, True)
 
 
+@register_model_architecture('mimo_transformer', 'mimo1_naive_transformer_wmt_en_de_big')
+def mimo1_naive_transformer_wmt_en_de_big(args):
+    transformer_wmt_en_de_big(args)
+    mimo_get_attributes(args, 1, True, True)
+
+
+@register_model_architecture('mimo_transformer', 'mimo2_naive_transformer_wmt_en_de_big')
+def mimo2_naive_transformer_wmt_en_de_big(args):
+    transformer_wmt_en_de_big(args)
+    mimo_get_attributes(args, 2, True, True)
+
+
+@register_model_architecture('mimo_transformer', 'mimo3_naive_transformer_wmt_en_de_big')
+def mimo3_naive_transformer_wmt_en_de_big(args):
+    transformer_wmt_en_de_big(args)
+    mimo_get_attributes(args, 3, True, True)
+
