@@ -140,3 +140,32 @@ class EnsembleGaussianCategoricals(EnsembleCategoricals):
         return super(EnsembleGaussianCategoricals, self).__call__(
             args, samples
         )
+
+
+class EnsembleGaussianDirichlets(EnsembleDirichlets):
+    def __init__(self):
+        super(EnsembleGaussianDirichlets, self).__init__()
+
+    @staticmethod
+    def sample(args, outputs: List[Tuple[torch.Tensor]]) -> List[torch.Tensor]:
+
+        # Number of samples to draw
+        num_samples = getattr(args, "ood_num_samples")
+
+        # Get gaussian distributions
+        gaussians = [normal.Normal(*op) for op in outputs]
+
+        # Get logit samples
+        samples = [g.sample() for _ in range(num_samples) for g in gaussians]
+
+        return samples
+
+    @torch.no_grad()
+    def __call__(self, args, outputs: List[Tuple[torch.Tensor]]) -> Dict:
+
+        # Draw log-alpha samples from gaussian model
+        samples = self.sample(args, outputs)
+
+        return super(EnsembleGaussianDirichlets, self).__call__(
+            args, samples
+        )

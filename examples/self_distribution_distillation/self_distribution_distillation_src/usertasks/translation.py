@@ -12,7 +12,8 @@ from self_distribution_distillation_src.uncertainty.categorical import (
 from self_distribution_distillation_src.uncertainty.dirichlet import (
     compute_token_dirichlet_uncertainties, compute_sequence_dirichlet_uncertainties)
 from self_distribution_distillation_src.uncertainty.gaussian import (
-    compute_token_gaussian_uncertainties, compute_sequence_gaussian_uncertainties)
+    compute_token_gaussian_uncertainties, compute_sequence_gaussian_uncertainties,
+    compute_token_gaussian_dirichlet_uncertainties, compute_sequence_gaussian_dirichlet_uncertainties)
 
 
 @dataclass
@@ -57,6 +58,9 @@ class TranslationUncertaintyTask(TranslationTask):
         elif args.uncertainty_class.startswith("gaussian"):
             self.compute_token_uncertainties = compute_token_gaussian_uncertainties
             self.compute_sequence_uncertainties = compute_sequence_gaussian_uncertainties
+        elif args.uncertainty_class.startswith("dirgaussian"):
+            self.compute_token_uncertainties = compute_token_gaussian_dirichlet_uncertainties
+            self.compute_sequence_uncertainties = compute_sequence_gaussian_dirichlet_uncertainties
 
     @classmethod
     def add_args(cls, parser):
