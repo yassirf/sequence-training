@@ -179,8 +179,8 @@ class SelfDirichletTransformerDecoder(TransformerDecoder):
             return z, extra
 
         # Stochastic last layer
-        zs = [self.output_layer(self.stochasticity(v)) for _ in range(self.num_passes)]
-        zs = torch.stack(zs, dim = 1)
+        zs = v.unsqueeze(1).repeat(1, self.num_passes, 1, 1)
+        zs = self.output_layer(self.stochasticity(zs))
 
         # Teacher branch prediction has shape (batch, models, len, vocab)
         extra['teacher_predictions_lp'] = zs.clone().detach()
@@ -268,8 +268,8 @@ class SelfGaussianTransformerDecoder(SelfDirichletTransformerDecoder):
             return z, extra
 
         # Stochastic last layer
-        zs = [self.output_layer(self.stochasticity(v)) for _ in range(self.num_passes)]
-        zs = torch.stack(zs, dim = 1)
+        zs = v.unsqueeze(1).repeat(1, self.num_passes, 1, 1)
+        zs = self.output_layer(self.stochasticity(zs))
 
         # Teacher branch prediction has shape (batch, models, len, vocab)
         extra['teacher_predictions_lp'] = zs.clone().detach()
@@ -633,3 +633,121 @@ class MimoTransformerDecoder(TransformerDecoder):
         z = self.reformat_output(z)
 
         return z, extra
+
+
+class SelfMimoTransformerDecoder(MimoTransformerDecoder):
+    def __init__(
+            self,
+            args,
+            dictionary,
+            embed_tokens,
+            no_encoder_attn=False,
+            output_projection=None,
+            bias=False,
+            num_heads=2,
+            naive=False
+    ):
+        super(SelfMimoTransformerDecoder, self).__init__(
+            args = args,
+            dictionary = dictionary,
+            embed_tokens = embed_tokens,
+            no_encoder_attn = no_encoder_attn,
+            output_projection = output_projection,
+            bias = bias,
+            num_heads = num_heads,
+            naive = naive,
+        )
+
+        # Stochasticity generation
+        self.stochasticity = MultiplicativeGaussianLayer(args.uniform_gauss_a, args.uniform_gauss_b, use_gpu = True)
+        self.num_passes = args.num_passes
+
+    @staticmethod
+    def ensemble(x):
+        # The input is of the form (batch, seq, num, vocab)
+        lps = torch.log_softmax(x, dim=-1)
+        lp = torch.logsumexp(lps, dim=-2) - np.log(lps.size(-2))
+        return lp, lps, x
+
+    def reformat_output(self, x):
+        # The input is of the form (batch * num-heads, num, seq, vocab * num-heads)
+        bn, n, s, vn = x.size()
+
+        # Get the effective batch and vocab size
+        b, v = bn//self.num_heads, vn//self.num_heads
+
+        # We need to review the input and choose the relevant ones
+        x = x.view(self.num_heads, b, n, s, self.num_heads, v)
+
+        # Now make a diagonal choice (ensemble, batch, num_classes) this is core to mimo
+        x = torch.diagonal(x, offset=0, dim1=0, dim2=4).permute(4, 0, 1, 2, 3)
+
+        # Return the formatted prediction
+        return x.reshape(-1, n, s, v)
+
+    def forward(
+            self,
+            prev_output_tokens,
+            encoder_out: Optional[Dict[str, List[Tensor]]] = None,
+            incremental_state: Optional[Dict[str, Dict[str, Optional[Tensor]]]] = None,
+            features_only: bool = False,
+            full_context_alignment: bool = False,
+            alignment_layer: Optional[int] = None,
+            alignment_heads: Optional[int] = None,
+            src_lengths: Optional[Any] = None,
+            return_all_hiddens: bool = False,
+    ):
+
+        v, extra = super(MimoTransformerDecoder, self).forward(
+            prev_output_tokens = prev_output_tokens,
+            encoder_out = encoder_out,
+            incremental_state = incremental_state,
+            features_only = True,
+            full_context_alignment = full_context_alignment,
+            alignment_layer = alignment_layer,
+            alignment_heads = alignment_heads,
+            src_lengths = src_lengths,
+            return_all_hiddens = return_all_hiddens
+        )
+
+        # In standard forward pass setting
+        if features_only:
+            return v, extra
+
+        # This model only works when
+        assert self.num_passes > 1
+
+        # Get the output layer and reformat it
+        z = self.output_layer(v)
+
+        # Do not perform subsequent code if in evaluation mode
+        if not self.training:
+            # Review the input into separate heads
+            z = z.view(z.size(0), z.size(1), self.num_heads, -1)
+
+            # Ensemble the predictions (batch, seq, vocab)
+            op, lps, la = self.ensemble(z)
+
+            # Add the separate predictions to extra (batch, models, len, vocab)
+            extra['teacher_predictions_lps'] = la.permute(0, 2, 1, 3)
+
+            return op, extra
+
+        # Stochastic last layer
+        zs = v.unsqueeze(1).repeat(1, self.num_passes, 1, 1)
+        zs = self.output_layer(self.stochasticity(zs))
+
+        # Reformat predictions for the loss
+        batch, seqlen, nvocab = z.size()
+
+        # Get number of stochastic passes and heads
+        nump, numh = self.num_passes, self.num_heads
+
+        # Teacher branch prediction has shape (batch, models, len, vocab)
+        extra['teacher_predictions_lp'] = zs.clone().detach().view(batch, nump, seqlen, numh, nvocab//numh)
+        extra['student_predictions_dir'] = z.view(batch, seqlen, numh, nvocab//numh)
+
+        # In training mode separate the different head predictions (batch, num, seq, vocab)
+        fmtz = self.reformat_output(z)
+
+        return fmtz.mean(dim = 1), extra

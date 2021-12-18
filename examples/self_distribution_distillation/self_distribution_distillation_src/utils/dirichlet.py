@@ -7,27 +7,26 @@ class DirichletEstimation(object):
     def __init__(
             self,
             logprobs: torch.Tensor,
-            temperature_scale: float = 1.0,
             estimation_iter: int = 1
     ):
-        self.logprobs = logprobs.clone()/temperature_scale
+        self.logprobs = logprobs
         self.estimation_iter = estimation_iter
         self.eps_init = 1e-3
         self.eps_step = 1e-6
 
-        # Logprobs should have size (batch, models, len, vocab)
-        assert logprobs.dim() == 4
+        # Logprobs should have size: (batch, models, len, vocab)
+        #                            (batch, models, len, numh, vocab)
+        assert logprobs.dim() >= 4
 
     @torch.no_grad()
     def estimation_init(self):
         """
         Initialises the mean and scale of the estimated dirichlet.
         """
-        # Normalise log probabilities
-        self.logprobs = torch.log_softmax(self.logprobs, dim = -1)
 
         # Extract size
-        b, m, s, v = self.logprobs.size()
+        size = self.logprobs.size()
+        b, m, s, v = size[0], size[1], size[2], size[-1]
 
         # Compute all necessary quantities
         log_e_prob = torch.logsumexp(self.logprobs, dim=1) - np.log(m)
