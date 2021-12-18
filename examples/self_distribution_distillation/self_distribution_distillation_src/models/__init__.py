@@ -11,6 +11,27 @@ from .gausstransformer import SelfGaussianTransformerModel
 from .gausstransformer import self_gaussian_transformer, self_gaussian_transformer_wmt_en_de_big
 from .batch import *
 
+# Combination networks
+from .dirmimo import SelfMimoTransformerModel
+from .dirmimo import (
+    self_mimo1_naive_transformer,
+    self_mimo1_naive_transformer_wmt_en_de_big,
+    self_mimo2_naive_transformer,
+    self_mimo2_naive_transformer_wmt_en_de_big,
+    self_mimo3_naive_transformer,
+    self_mimo3_naive_transformer_wmt_en_de_big,
+)
+from .gaussmimo import SelfGaussianMimoTransformerModel
+from .gaussmimo import (
+    self_gaussmimo1_naive_transformer,
+    self_gaussmimo1_naive_transformer_wmt_en_de_big,
+    self_gaussmimo2_naive_transformer,
+    self_gaussmimo2_naive_transformer_wmt_en_de_big,
+    self_gaussmimo3_naive_transformer,
+    self_gaussmimo3_naive_transformer_wmt_en_de_big,
+)
+
+
 __all__ = [
     'SelfDirichletTransformerModel',
     'self_dirichlet_transformer',
@@ -39,3 +60,23 @@ __all__ = [
     'batch2_ffn_transformer',
     'batch3_ffn_transformer',
 ]
+
+__all__.extend([
+    'SelfMimoTransformerModel',
+    'self_mimo1_naive_transformer',
+    'self_mimo1_naive_transformer_wmt_en_de_big',
+    'self_mimo2_naive_transformer',
+    'self_mimo2_naive_transformer_wmt_en_de_big',
+    'self_mimo3_naive_transformer',
+    'self_mimo3_naive_transformer_wmt_en_de_big',
+])
+
+__all__.extend([
+    'SelfGaussianMimoTransformerModel',
+    'self_gaussmimo1_naive_transformer',
+    'self_gaussmimo1_naive_transformer_wmt_en_de_big',
+    'self_gaussmimo2_naive_transformer',
+    'self_gaussmimo2_naive_transformer_wmt_en_de_big',
+    'self_gaussmimo3_naive_transformer',
+    'self_gaussmimo3_naive_transformer_wmt_en_de_big',
+])
