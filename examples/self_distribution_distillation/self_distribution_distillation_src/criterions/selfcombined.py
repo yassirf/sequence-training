@@ -138,7 +138,8 @@ class LabelSmoothedCrossEntropyAndSelfCombinedCriterion(LabelSmoothedCrossEntrop
         """
 
         # First get teacher/student predictions
-        teacher_pred = torch.log_softmax(extra['teacher_predictions_lp']/self.temperature_scale_est, dim=-1)
+        teacher_pred_z = extra['teacher_predictions_lp']/self.temperature_scale_est
+        teacher_pred = torch.log_softmax(teacher_pred_z, dim=-1)
         student_pred = extra['student_predictions_mean']
 
         # Define estimator
@@ -158,11 +159,11 @@ class LabelSmoothedCrossEntropyAndSelfCombinedCriterion(LabelSmoothedCrossEntrop
             reduce=reduce
         )
 
-        # Get NLL Loss for diagonal gaussian
+        # Get NLL Loss for diagonal gaussian, BUT ON LOG-ALPHAS
         gauss_nll_loss = gaussian_nll(
             gaussian_mean=extra['student_predictions_mean'],
             gaussian_scale=extra['student_predictions_scale'],
-            samples=teacher_pred,
+            samples=teacher_pred_z,
             reduce=reduce,
         )
 
