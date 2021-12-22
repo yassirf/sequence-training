@@ -669,22 +669,6 @@ class SelfMimoTransformerDecoder(MimoTransformerDecoder):
         lp = torch.logsumexp(lps, dim=-2) - np.log(lps.size(-2))
         return lp, lps, x
 
-    def reformat_output(self, x):
-        # The input is of the form (batch * num-heads, num, seq, vocab * num-heads)
-        bn, n, s, vn = x.size()
-
-        # Get the effective batch and vocab size
-        b, v = bn//self.num_heads, vn//self.num_heads
-
-        # We need to review the input and choose the relevant ones
-        x = x.view(self.num_heads, b, n, s, self.num_heads, v)
-
-        # Now make a diagonal choice (ensemble, batch, num_classes) this is core to mimo
-        x = torch.diagonal(x, offset=0, dim1=0, dim2=4).permute(4, 0, 1, 2, 3)
-
-        # Return the formatted prediction
-        return x.reshape(-1, n, s, v)
-
     def forward(
             self,
             prev_output_tokens,
@@ -748,9 +732,9 @@ class SelfMimoTransformerDecoder(MimoTransformerDecoder):
         extra['student_predictions_dir'] = z.view(batch, seqlen, numh, nvocab//numh)
 
         # In training mode separate the different head predictions (batch, num, seq, vocab)
-        fmtz = self.reformat_output(z)
+        fmtz = self.reformat_output(zs.mean(dim = 1))
 
-        return fmtz.mean(dim = 1), extra
+        return fmtz, extra
 
 
 class SelfGaussianMimoTransformerDecoder(SelfMimoTransformerDecoder):
