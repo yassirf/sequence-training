@@ -8,6 +8,7 @@ from examples.speech_recognition.models.vggtransformer import (
     vggtransformer_base,
 )
 
+
 @register_model('speech_vggtransformer')
 class VGGTransformerModel(UserVGGTransformerModel):
     @classmethod

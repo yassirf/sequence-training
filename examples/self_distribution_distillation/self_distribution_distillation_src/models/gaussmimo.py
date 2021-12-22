@@ -5,6 +5,7 @@ from fairseq.models import (
 )
 from fairseq.models.transformer import (
     TransformerModel,
+    tiny_architecture,
     base_architecture,
     transformer_wmt_en_de_big
 )
@@ -44,6 +45,24 @@ def mimo_get_attributes(args, heads, bias, naive):
     args.num_heads = heads
     args.bias = bias
     args.naive_mimo = naive
+
+
+@register_model_architecture('self_gaussmimo_transformer', 'self_gaussmimo1_naive_transformer_tiny')
+def self_gaussmimo1_naive_transformer_tiny(args):
+    tiny_architecture(args)
+    mimo_get_attributes(args, 1, True, True)
+
+
+@register_model_architecture('self_gaussmimo_transformer', 'self_gaussmimo2_naive_transformer_tiny')
+def self_gaussmimo2_naive_transformer_tiny(args):
+    tiny_architecture(args)
+    mimo_get_attributes(args, 2, True, True)
+
+
+@register_model_architecture('self_gaussmimo_transformer', 'self_gaussmimo3_naive_transformer_tiny')
+def self_gaussmimo3_naive_transformer_tiny(args):
+    tiny_architecture(args)
+    mimo_get_attributes(args, 3, True, True)
 
 
 @register_model_architecture('self_gaussmimo_transformer', 'self_gaussmimo1_naive_transformer')

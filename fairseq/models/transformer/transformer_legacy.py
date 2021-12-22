@@ -157,11 +157,11 @@ class TransformerModel(TransformerModelBase):
 @register_model_architecture("transformer", "transformer_tiny")
 def tiny_architecture(args):
     args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 64)
-    args.encoder_ffn_embed_dim = getattr(args, "encoder_ffn_embed_dim", 64)
-    args.encoder_layers = getattr(args, "encoder_layers", 2)
-    args.encoder_attention_heads = getattr(args, "encoder_attention_heads", 2)
-    args.decoder_layers = getattr(args, "decoder_layers", 2)
-    args.decoder_attention_heads = getattr(args, "decoder_attention_heads", 2)
+    args.encoder_ffn_embed_dim = getattr(args, "encoder_ffn_embed_dim", 4 * 64)
+    args.encoder_layers = getattr(args, "encoder_layers", 3)
+    args.encoder_attention_heads = getattr(args, "encoder_attention_heads", 4)
+    args.decoder_layers = getattr(args, "decoder_layers", 3)
+    args.decoder_attention_heads = getattr(args, "decoder_attention_heads", 4)
     return base_architecture(args)
 
 

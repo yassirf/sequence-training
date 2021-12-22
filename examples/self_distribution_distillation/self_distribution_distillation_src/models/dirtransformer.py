@@ -5,6 +5,7 @@ from fairseq.models import (
 )
 from fairseq.models.transformer import (
     TransformerModel,
+    tiny_architecture,
     base_architecture,
     transformer_wmt_en_de_big
 )
@@ -41,6 +42,12 @@ def self_get_attributes(args):
     args.uniform_gauss_b = getattr(args, 'uniform_gauss_b', 0.1)
     args.num_passes = getattr(args, 'num_passes', 5)
     args.bias = getattr(args, 'bias', 0)
+
+
+@register_model_architecture('self_dirichlet_transformer', 'self_dirichlet_transformer_tiny')
+def self_dirichlet_transformer_tiny(args):
+    tiny_architecture(args)
+    self_get_attributes(args)
 
 
 @register_model_architecture('self_dirichlet_transformer', 'self_dirichlet_transformer')
