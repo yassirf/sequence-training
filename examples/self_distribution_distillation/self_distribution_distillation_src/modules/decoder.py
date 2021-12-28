@@ -838,6 +838,6 @@ class SelfGaussianMimoTransformerDecoder(SelfMimoTransformerDecoder):
         extra['student_predictions_mean'] = z.view(batch, seqlen, numh, nvocab//numh)
 
         # In training mode separate the different head predictions (batch, num, seq, vocab)
-        fmtz = self.reformat_output(z)
+        fmtz = self.reformat_output(zs.mean(dim = 1))
 
-        return fmtz.mean(dim = 1), extra
+        return fmtz, extra
