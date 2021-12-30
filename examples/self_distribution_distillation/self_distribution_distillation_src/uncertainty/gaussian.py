@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 
+from .misc import process_outputs_gaussian
 from .estimators import (
     EnsembleGaussianCategoricals,
     EnsembleGaussianDirichlets
@@ -14,6 +15,9 @@ def compute_token_gaussian_uncertainties(args, outputs, extra):
     :param outputs: List of Tensors of size [batch_size, seq_len, vocab] of Log Dirichlet Concentrations
     :return: Tensors of token level uncertainties of size [batch_size, seq_len]
     """
+    # Get processed outputs in mimo cases
+    outputs, extra = process_outputs_gaussian(outputs, extra)
+
     outputs = [(op, ex['student_predictions_scale']) for op, ex in zip(outputs, extra)]
 
     estimator = EnsembleGaussianCategoricals()
@@ -34,6 +38,8 @@ def compute_sequence_gaussian_uncertainties(args, outputs, extra, output_ids, ou
     :param mask: Tensor of size [batch_size] of masked token ids
     :return: Tuple of tensor score, sentence log-probability and token log-probabilities
     """
+    # Get processed outputs in mimo cases
+    outputs, extra = process_outputs_gaussian(outputs, extra)
 
     # Get output tuples
     outputs = [(op, ex['student_predictions_scale']) for op, ex in zip(outputs, extra)]
@@ -74,6 +80,9 @@ def compute_token_gaussian_dirichlet_uncertainties(args, outputs, extra):
     :param outputs: List of Tensors of size [batch_size, seq_len, vocab] of Log Dirichlet Concentrations
     :return: Tensors of token level uncertainties of size [batch_size, seq_len]
     """
+    # Get processed outputs in mimo cases
+    outputs, extra = process_outputs_gaussian(outputs, extra)
+
     outputs = [(op, ex['student_predictions_scale']) for op, ex in zip(outputs, extra)]
 
     estimator = EnsembleGaussianDirichlets()
@@ -94,6 +103,8 @@ def compute_sequence_gaussian_dirichlet_uncertainties(args, outputs, extra, outp
     :param mask: Tensor of size [batch_size] of masked token ids
     :return: Tuple of tensor score, sentence log-probability and token log-probabilities
     """
+    # Get processed outputs in mimo cases
+    outputs, extra = process_outputs_gaussian(outputs, extra)
 
     # Get output tuples
     outputs = [(op, ex['student_predictions_scale']) for op, ex in zip(outputs, extra)]

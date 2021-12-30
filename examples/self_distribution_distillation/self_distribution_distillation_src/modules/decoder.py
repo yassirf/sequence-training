@@ -713,7 +713,7 @@ class SelfMimoTransformerDecoder(MimoTransformerDecoder):
             op, lps, la = self.ensemble(z)
 
             # Add the separate predictions to extra (batch, models, len, vocab)
-            extra['teacher_predictions_lps'] = la.permute(0, 2, 1, 3)
+            extra['teacher_predictions_lp'] = la.permute(0, 2, 1, 3)
 
             return op, extra
 
@@ -814,18 +814,19 @@ class SelfGaussianMimoTransformerDecoder(SelfMimoTransformerDecoder):
         nump, numh = self.num_passes, self.num_heads
 
         # Student scale predictions reformatted to mimo form
-        extra['student_predictions_scale'] = s.view(batch, seqlen, numh, -1)
+        extra['student_predictions_scale'] = s.view(batch, seqlen, numh, nvocab//numh)
 
         # Do not perform subsequent code if in evaluation mode
         if not self.training:
             # Review the input into separate heads
-            z = z.view(batch, seqlen, numh, -1)
+            z = z.view(batch, seqlen, numh, nvocab//numh)
 
             # Ensemble the predictions (batch, seq, vocab)
             op, lps, la = self.ensemble(z)
 
             # Add the separate predictions to extra (batch, models, len, vocab)
-            extra['teacher_predictions_lps'] = la.permute(0, 2, 1, 3)
+            extra['teacher_predictions_lp'] = la.permute(0, 2, 1, 3)
+            extra['student_predictions_scale'] = extra['student_predictions_scale'].permute(0, 2, 1, 3)
 
             return op, extra
 
