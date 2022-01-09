@@ -92,6 +92,7 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
         """
         # Number of repetitions in batch
         repetitions = self.args.input_repetition
+        print("input", repetitions, type(repetitions))
 
         # Get the number of examples in batch
         nsamples = sample['id'].size(0)
@@ -156,6 +157,7 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
 
         # Number of repetitions in batch
         repetitions = self.args.batch_repetition
+        print("batch", repetitions, type(repetitions))
 
         # For single repetition return the same sample
         if repetitions == 1: return sample
@@ -164,7 +166,7 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
         nsamples = sample['id'].size(0)
 
         # Create a permutation based on this
-        p = torch.cat([torch.randperm(nsamples) for i in range(repetitions - 1)])
+        p = torch.cat([torch.randperm(nsamples) for _ in range(repetitions - 1)])
 
         # Now create the augmented sample
         sample['ntokens'] = repetitions * sample['ntokens']
