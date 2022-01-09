@@ -92,7 +92,6 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
         """
         # Number of repetitions in batch
         repetitions = self.args.input_repetition
-        print("==> input repetitions", repetitions)
 
         # Get the number of examples in batch
         nsamples = sample['id'].size(0)
@@ -108,22 +107,20 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
 
         # Add additional parameters to ensure divisibility
         repsamples += multip - repsamples % multip if repsamples % multip else 0
-        print("==> input samples", repetitions)
 
         # Create permutation long tensor
         p = torch.stack([torch.arange(repsamples), torch.arange(repsamples)], dim=1).reshape(-1)
         p = torch.cat([p, torch.arange(repsamples, nsamples)])
-        print("==> input repetitions", p.size(0))
 
         # Meta and target information permuted
         for key, value in sample.items():
             if isinstance(value, torch.LongTensor):
-                sample[key] = torch.cat([value, value[p]])
+                sample[key] = value[p]
 
         # Input information augmented
         for key, value in sample['net_input'].items():
             if isinstance(value, torch.LongTensor):
-                sample['net_input'][key] = torch.cat([value, value[p]])
+                sample['net_input'][key] = value[p]
 
         return sample
 
