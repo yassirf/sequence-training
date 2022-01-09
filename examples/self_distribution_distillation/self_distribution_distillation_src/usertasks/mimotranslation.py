@@ -110,7 +110,7 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
 
         # Create permutation long tensor
         p = torch.stack([torch.arange(repsamples), torch.arange(repsamples)], dim=1).reshape(-1)
-        p = torch.cat([p, torch.arange(repsamples, repsamples + sample.size(0))])
+        p = torch.cat([p, torch.arange(repsamples, nsamples)])
 
         # Meta and target information permuted
         for key, value in sample.items():
