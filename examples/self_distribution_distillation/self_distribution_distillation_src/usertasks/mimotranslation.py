@@ -204,11 +204,8 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
         """
 
         # Modify the sample with batch and input repetition
-        print("sample none ", sample['id'].size(0))
         sample = self.add_input_repetition(sample)
-        print("sample input", sample['id'].size(0))
         sample = self.add_batch_repetition(sample)
-        print("sample batch", sample['id'].size(0))
 
         return super(TranslationMIMOTask, self).train_step(
             sample = sample,
