@@ -102,8 +102,8 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
         # Create repeated samples (for two headed model) and ensure is divisible by batch multiple
         repsamples = int(repetitions * nsamples)
 
-        # Ensure batch is divisible by multiple
-        multip = self.args.required_batch_size_multiple
+        # Ensure batch is divisible by multiple of two for base mimo
+        multip = 2
 
         # Add additional parameters to ensure divisibility
         repsamples += multip - repsamples % multip if repsamples % multip else 0
