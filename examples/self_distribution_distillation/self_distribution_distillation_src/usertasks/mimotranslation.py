@@ -156,8 +156,7 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
         """
 
         # Number of repetitions in batch
-        repetitions = self.args.batch_repetition
-        print("batch", repetitions, type(repetitions))
+        repetitions = round(self.args.batch_repetition)
 
         # For single repetition return the same sample
         if repetitions == 1: return sample
