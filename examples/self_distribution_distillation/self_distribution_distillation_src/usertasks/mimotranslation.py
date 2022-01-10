@@ -126,6 +126,10 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
         # sample['ntokens'] = int(sample['ntokens'] * (1 + repetitions))
         # if 'nsentences' in sample: sample['nsentences'] = int(sample['nsentences'] * (1 + repetitions))
 
+        # Now create the augmented sample
+        sample['ntokens'] = int(sample['ntokens'] * (1 + repsamples/nsamples))
+        sample['nsentences'] = sample['id'].size(0)
+
         return sample
 
     def add_batch_repetition(self, sample):
