@@ -97,7 +97,7 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
         nsamples = sample['id'].size(0)
 
         # Special case if no added samples
-        if int(repetitions * nsamples) == 0: return sample
+        if abs(repetitions) < 1e-6: return sample
 
         # Create repeated samples (for two headed model) and ensure is divisible by batch multiple
         repsamples = int(repetitions * nsamples)
@@ -107,6 +107,9 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
 
         # Add additional parameters to ensure divisibility
         repsamples += multip - repsamples % multip if repsamples % multip else 0
+
+        # Now create the augmented sample
+        sample['ntokens'] *= (1 + repetitions)
 
         # Create permutation long tensor
         p = torch.stack([torch.arange(repsamples), torch.arange(repsamples)], dim=1).reshape(-1)
@@ -167,7 +170,7 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
         p = torch.cat([torch.randperm(nsamples) for _ in range(repetitions - 1)])
 
         # Now create the augmented sample
-        sample['ntokens'] = repetitions * sample['ntokens']
+        sample['ntokens'] *= repetitions
 
         # Meta and target information permuted
         for key, value in sample.items():
