@@ -122,11 +122,7 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
             if isinstance(value, torch.LongTensor):
                 sample['net_input'][key] = value[p]
 
-        # Now create the augmented sample
-        # sample['ntokens'] = int(sample['ntokens'] * (1 + repetitions))
-        # if 'nsentences' in sample: sample['nsentences'] = int(sample['nsentences'] * (1 + repetitions))
-
-        # Now create the augmented sample
+        # Add sample information
         sample['ntokens'] = int(sample['ntokens'] * (1 + repsamples/nsamples))
         sample['nsentences'] = sample['id'].size(0)
 
