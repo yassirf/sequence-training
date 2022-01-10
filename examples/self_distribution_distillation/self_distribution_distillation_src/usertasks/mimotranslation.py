@@ -206,6 +206,7 @@ class TranslationMIMOTask(TranslationUncertaintyTask):
                 - logging outputs to display while training
         """
 
+        import pdb; pdb.set_trace()
         # Modify the sample with batch and input repetition
         sample = self.add_input_repetition(sample)
         sample = self.add_batch_repetition(sample)
