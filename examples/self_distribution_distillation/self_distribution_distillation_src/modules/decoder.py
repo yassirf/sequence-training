@@ -572,7 +572,8 @@ class MimoTransformerDecoder(TransformerDecoder):
         x = x.view(self.num_heads, b, s, self.num_heads, v)
 
         # Now make a diagonal choice (ensemble, batch, num_classes) this is core to mimo
-        x = torch.diagonal(x, offset=0, dim1=0, dim2=3).permute(3, 0, 1, 2)
+        x = torch.diagonal(x, offset=0, dim1=0, dim2=3)
+        x = x.permute(3, 0, 1, 2)
 
         # Return the formatted prediction
         return x.reshape(-1, s, v)
