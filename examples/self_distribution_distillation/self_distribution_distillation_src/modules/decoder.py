@@ -628,6 +628,9 @@ class MimoTransformerDecoder(TransformerDecoder):
             # Add the separate predictions to extra (batch, models, len, vocab)
             extra['teacher_predictions_lp'] = lps.permute(0, 2, 1, 3)
 
+            # For analysing separate heads
+            op = z[:, :, 0]
+
             return op, extra
 
         # In training mode separate the different head predictions (batch, seq, vocab)
