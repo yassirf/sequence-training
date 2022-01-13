@@ -629,7 +629,7 @@ class MimoTransformerDecoder(TransformerDecoder):
             extra['teacher_predictions_lp'] = lps.permute(0, 2, 1, 3)
 
             # For analysing separate heads
-            op = z[:, :, 1]
+            op = z[:, :, -1]
 
             return op, extra
 
