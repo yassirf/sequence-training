@@ -20,15 +20,13 @@ class MimoEmbedding(nn.Module):
         self.padding_idx = padding_idx
 
         # Create the embedding model
-        self.emb = Embedding(
-            self.num_embeddings,
-            self.num_heads * self.embedding_dim,
-            self.padding_idx
-        )
+        self.embs = nn.ModuleList([
+            Embedding(num_embeddings, embedding_dim, padding_idx) for _ in range(num_heads)
+        ])
 
     def forward(self, x):
         # Perform mimo embedding (batch * num-heads, seq, dim * num-heads)
-        x = self.emb(x)
+        x = torch.cat([emb(x) for emb in self.embs], dim = -1)
 
         # The input is of the form (batch * num-heads, seq, dim * num-heads)
         bn, s, dn = x.size()

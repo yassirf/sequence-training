@@ -533,27 +533,19 @@ class MimoTransformerDecoder(TransformerDecoder):
                 factor=args.adaptive_softmax_factor,
                 tie_proj=args.tie_adaptive_proj,
             )
-        elif self.share_input_output_embed and not args.naive_mimo:
-            # Build a list of linear layers
-            modulelist = [nn.Linear(
-                self.embed_tokens.weight.shape[1],
-                self.embed_tokens.weight.shape[0],
-                bias=args.bias,
-            ) for _ in range(args.num_heads)]
-
-            # Share with embedding token weights
-            for output_projection in modulelist:
-                output_projection.weight = self.embed_tokens.weight
-
-            # Now combine the layers into a single entity
-            self.output_projection = Concatenator(nn.ModuleList(modulelist))
+        elif self.share_input_output_embed:
+            self.output_projection = nn.ModuleList([
+                nn.Linear(self.output_embed_dim, len(dictionary), bias=args.bias) for _ in range(args.num_heads)
+            ])
+            for i in range(args.num_heads):
+                self.output_projection[i].weight = self.embed_tokens.embs[i].weight
         else:
-            self.output_projection = nn.Linear(
-                self.output_embed_dim, len(dictionary) * args.num_heads, bias=args.bias
-            )
-            nn.init.normal_(
-                self.output_projection.weight, mean=0, std=self.output_embed_dim ** -0.5
-            )
+            self.output_projection = nn.ModuleList([
+                nn.Linear(self.output_embed_dim, len(dictionary), bias=args.bias) for _ in range(args.num_heads)
+            ])
+            for opp in self.output_projection:
+                nn.init.normal_(opp.weight, mean=0, std=self.output_embed_dim ** -0.5)
+
         num_base_layers = args.base_layers
         for i in range(num_base_layers):
             self.layers.insert(
@@ -584,6 +576,16 @@ class MimoTransformerDecoder(TransformerDecoder):
         lps = torch.log_softmax(x, dim = -1)
         x = torch.logsumexp(lps, dim = -2) - np.log(lps.size(-2))
         return x, lps
+
+    def output_layer(self, features):
+        """
+        Project features to the vocabulary size.
+        """
+        if self.adaptive_softmax is None:
+            # project back to size of vocabulary
+            return torch.cat([opp(features) for opp in self.output_projection], dim = -1)
+        else:
+            return features
 
     def forward(
             self,
