@@ -1,4 +1,4 @@
-
+from fairseq import utils
 from fairseq.models import (
     register_model,
     register_model_architecture
@@ -9,9 +9,8 @@ from fairseq.models.transformer import (
     base_architecture,
     transformer_wmt_en_de_big
 )
-from self_distribution_distillation_src.modules.decoder import (
-    MimoTransformerDecoder
-)
+from self_distribution_distillation_src.modules.embedding import MimoEmbedding
+from self_distribution_distillation_src.modules.decoder import MimoTransformerDecoder
 
 
 @register_model('mimo_transformer')
@@ -23,6 +22,18 @@ class MimoTransformerModel(TransformerModel):
         parser.add_argument('--naive-mimo', type=int, default=0)
         parser.add_argument('--num-heads', type=int, default=2)
         parser.add_argument('--bias', type=int, default=0)
+
+    @classmethod
+    def build_embedding(cls, args, dictionary, embed_dim, path=None):
+        num_embeddings = len(dictionary)
+        padding_idx = dictionary.pad()
+
+        emb = MimoEmbedding(num_embeddings, embed_dim, args.num_heads, padding_idx)
+        # if provided, load from preloaded dictionaries
+        if path:
+            embed_dict = utils.parse_embedding(path)
+            utils.load_embedding(embed_dict, dictionary, emb)
+        return emb
 
     @classmethod
     def build_decoder(cls, args, tgt_dict, embed_tokens):
