@@ -503,7 +503,6 @@ class MimoTransformerDecoder(TransformerDecoder):
             output_projection=None,
             bias=False,
             num_heads=2,
-            naive=False
     ):
         super(MimoTransformerDecoder, self).__init__(
             args = args,
@@ -518,9 +517,6 @@ class MimoTransformerDecoder(TransformerDecoder):
 
         # Number of heads in mimo model
         self.num_heads = num_heads
-
-        # Letting output heads and embedding share weights or not
-        self.naive = naive
 
     def build_output_projection(self, args, dictionary, embed_tokens):
         if args.adaptive_softmax_cutoff is not None:
@@ -630,7 +626,6 @@ class SelfMimoTransformerDecoder(MimoTransformerDecoder):
             output_projection=None,
             bias=False,
             num_heads=2,
-            naive=False
     ):
         super(SelfMimoTransformerDecoder, self).__init__(
             args = args,
@@ -640,7 +635,6 @@ class SelfMimoTransformerDecoder(MimoTransformerDecoder):
             output_projection = output_projection,
             bias = bias,
             num_heads = num_heads,
-            naive = naive,
         )
 
         # Stochasticity generation
@@ -732,7 +726,6 @@ class SelfGaussianMimoTransformerDecoder(SelfMimoTransformerDecoder):
             output_projection=None,
             bias=False,
             num_heads=2,
-            naive=False
     ):
         super(SelfGaussianMimoTransformerDecoder, self).__init__(
             args = args,
@@ -742,7 +735,6 @@ class SelfGaussianMimoTransformerDecoder(SelfMimoTransformerDecoder):
             output_projection = output_projection,
             bias = bias,
             num_heads = num_heads,
-            naive = naive,
         )
 
     def build_output_projection(self, args, dictionary, embed_tokens):
