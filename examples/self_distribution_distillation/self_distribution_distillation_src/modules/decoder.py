@@ -553,28 +553,10 @@ class MimoTransformerDecoder(TransformerDecoder):
                 BaseLayer(args),
             )
 
-    def reformat_output(self, x):
-        # The input is of the form (batch * num-heads, seq, vocab * num-heads)
-        bn, s, vn = x.size()
-
-        # Get the effective batch and vocab size
-        b, v = bn//self.num_heads, vn//self.num_heads
-
-        # We need to review the input and choose the relevant ones
-        x = x.view(self.num_heads, b, s, self.num_heads, v)
-
-        # Now make a diagonal choice (ensemble, batch, num_classes) this is core to mimo
-        x = torch.diagonal(x, offset=0, dim1=0, dim2=3)
-        x = x.permute(3, 0, 1, 2)
-
-        # Return the formatted prediction
-        return x.reshape(-1, s, v)
-
     @staticmethod
-    def ensemble(x):
-        # The input is of the form (batch, seq, num, vocab)
+    def ensemble(x, dim = -2):
         lps = torch.log_softmax(x, dim = -1)
-        x = torch.logsumexp(lps, dim = -2) - np.log(lps.size(-2))
+        x = torch.logsumexp(lps, dim = dim) - np.log(lps.size(dim))
         return x, lps
 
     def output_layer(self, features):
@@ -583,7 +565,7 @@ class MimoTransformerDecoder(TransformerDecoder):
         """
         if self.adaptive_softmax is None:
             # project back to size of vocabulary
-            return torch.cat([opp(features) for opp in self.output_projection], dim = -1)
+            return [opp(features) for opp in self.output_projection]
         else:
             return features
 
@@ -615,28 +597,25 @@ class MimoTransformerDecoder(TransformerDecoder):
         if features_only:
             return v, extra
 
-        # Get the output layer and reformat it
-        z = self.output_layer(v)
+        # Get the output layer and reformat it list(batch, len, vocab)
+        z: List[Tensor] = self.output_layer(v)
 
-        # Do not perform subsequent code if in evaluation mode
+        # In inference mode the predictions have to be treated differently
         if not self.training:
 
-            # Review the input into separate heads
-            z = z.view(z.size(0), z.size(1), self.num_heads, -1)
+            # Review the input into separate heads (batch, num, len, vocab)
+            z = torch.stack(z, dim = 1)
 
-            # Ensemble the predictions (batch, seq, vocab)
-            op, lps = self.ensemble(z)
+            # Ensemble the predictions (batch, len, vocab)
+            op, lps = self.ensemble(z, dim = 1)
 
             # Add the separate predictions to extra (batch, models, len, vocab)
-            extra['teacher_predictions_lp'] = lps.permute(0, 2, 1, 3)
-
-            # For analysing separate heads
-            op = z[:, :, 0]
+            extra['teacher_predictions_lp'] = lps
 
             return op, extra
 
-        # In training mode separate the different head predictions (batch, seq, vocab)
-        z = self.reformat_output(z)
+        # In training mode separate the different predictions are retrieved by stacking
+        z = torch.stack(z, dim = 0)
 
         return z, extra
 
