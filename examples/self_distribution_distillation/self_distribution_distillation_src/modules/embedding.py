@@ -20,14 +20,17 @@ class MimoEmbedding(nn.Module):
         self.padding_idx = padding_idx
 
         # Create the embedding model
-        self.embs = Embedding(num_embeddings, embedding_dim * num_heads, padding_idx)
+        self.embs = nn.ModuleList([
+            Embedding(num_embeddings, embedding_dim, padding_idx)
+        for _ in range(num_heads)])
 
         # Dimensionality reduction
         self.reduction = nn.Linear(embedding_dim * num_heads, embedding_dim)
 
     def forward(self, x):
+
         # Get the embeddings for each sub-batch (num-heads * batch, len, num-heads * dim)
-        x = self.embs(x)
+        x = torch.cat([emb(x) for emb in self.embs], dim = -1)
 
         # In training mode we need to permute the embeddings so inputs share features
         if self.training:
@@ -38,7 +41,7 @@ class MimoEmbedding(nn.Module):
             x = x.view(self.num_heads, bn//self.num_heads, s, self.num_heads, dn//self.num_heads)
 
             # Transpose the input so each input shares features with remaining inputs
-            x = torch.transpose(x, 0, 3).view(bn, s, dn)
+            x = torch.transpose(x, 0, 3).reshape(bn, s, dn)
 
         # Perform dimensionality reduction to match the required size of the network
         x = self.reduction(x)
