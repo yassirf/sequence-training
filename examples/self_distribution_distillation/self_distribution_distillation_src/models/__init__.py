@@ -1,9 +1,7 @@
 
-from .dirtransformer import *
 from .mimo import *
-from .termination import *
+from .dirtransformer import *
 from .gausstransformer import *
-from .batch import *
 
 # Combination networks
 from .dirmimo import *
