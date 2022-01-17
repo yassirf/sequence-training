@@ -10,7 +10,7 @@ def Embedding(num_embeddings, embedding_dim, padding_idx):
 
 
 class MimoEmbedding(nn.Module):
-    def __init__(self, num_embeddings, embedding_dim, num_heads, padding_idx):
+    def __init__(self, num_embeddings, embedding_dim, num_heads, padding_idx, trainable = False):
         super(MimoEmbedding, self).__init__()
 
         # Assign parameters
@@ -21,7 +21,7 @@ class MimoEmbedding(nn.Module):
 
         # Create the embedding model
         self.embs = nn.ModuleList([
-            Embedding(num_embeddings, embedding_dim, padding_idx)
+            Embedding(num_embeddings, embedding_dim, padding_idx if not trainable else None)
         for _ in range(num_heads)])
 
     def get_embeddings(self, x):
