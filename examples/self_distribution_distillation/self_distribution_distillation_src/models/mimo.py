@@ -20,7 +20,7 @@ class MimoTransformerModel(TransformerModel):
     def add_args(cls, parser):
         TransformerModel.add_args(parser)
         parser.add_argument('--num-heads', type=int, default = 2)
-        parser.add_argument('--padding', type=int, default = 1)
+        parser.add_argument('--trainable-upadding', type=int, default = 1)
         parser.add_argument('--bias', type=int, default = 0)
 
     @classmethod
@@ -28,7 +28,7 @@ class MimoTransformerModel(TransformerModel):
         num_embeddings = len(dictionary)
 
         # Make padding a learnable embedding
-        padding_idx = dictionary.pad() if args.padding else None
+        padding_idx = dictionary.pad() if args.trainable_upadding else None
 
         emb = MimoEmbedding(num_embeddings, embed_dim, args.num_heads, padding_idx)
         # if provided, load from preloaded dictionaries
