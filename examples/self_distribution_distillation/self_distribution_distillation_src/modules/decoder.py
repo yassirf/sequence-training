@@ -550,6 +550,7 @@ class MimoTransformerDecoder(TransformerDecoder):
             return op, extra
 
         # In training mode separate the different head predictions (batch, seq, vocab)
+        # where each takes the corresponding fraction of the batch in order
         z = self.reformat_output(z)
 
         return z, extra
