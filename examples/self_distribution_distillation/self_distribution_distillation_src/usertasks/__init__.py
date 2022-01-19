@@ -8,11 +8,9 @@
 
 
 from .translation import TranslationUncertaintyTask
-from .mimotranslation import TranslationMIMOTask
 
 __all__ = [
     'TranslationUncertaintyTask',
-    'TranslationMIMOTask',
 ]
 
 
