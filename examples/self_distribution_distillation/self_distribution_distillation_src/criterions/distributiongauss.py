@@ -71,7 +71,7 @@ def gaussian_kl_divergence(
     return loss
 
 
-@register_criterion("kl_divergence_distillation_and_gauss", dataclass=GaussKLDivergenceAndGaussCriterionConfig)
+@register_criterion("gauss_kl_divergence_distillation_and_gauss", dataclass=GaussKLDivergenceAndGaussCriterionConfig)
 class GaussKLDivergenceAndGaussCriterion(KLDivergenceCriterion):
     def __init__(
             self,

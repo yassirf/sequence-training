@@ -60,7 +60,7 @@ def dirichlet_kl_divergence(log_alphas, teacher_log_alphas, temperature_scale_nu
     return loss
 
 
-@register_criterion("kl_divergence_distillation_and_dir", dataclass=DirKLDivergenceAndDirCriterionConfig)
+@register_criterion("dir_kl_divergence_distillation_and_dir", dataclass=DirKLDivergenceAndDirCriterionConfig)
 class DirKLDivergenceAndDirCriterion(KLDivergenceCriterion):
     def __init__(
             self,
