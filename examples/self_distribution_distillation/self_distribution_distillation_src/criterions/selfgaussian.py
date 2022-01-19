@@ -35,7 +35,7 @@ class LabelSmoothedCrossEntropyAndSelfGaussianNLLCriterionConfig(FairseqDataclas
     sentence_avg: bool = II("optimization.sentence_avg")
 
 
-def gaussian_nll(gaussian_mean: torch.Tensor, gaussian_scale: torch.Tensor, samples: torch.Tensor, reduce=True):
+def gaussian_nll(gaussian_mean: torch.Tensor, gaussian_scale: torch.Tensor, samples: torch.Tensor, ignore_mask=None, reduce=True):
     # Get sufficient statistics
     sample_mean = samples.mean(dim = 1)
     sample_mean_sq = (samples ** 2).mean(dim = 1)
@@ -47,6 +47,9 @@ def gaussian_nll(gaussian_mean: torch.Tensor, gaussian_scale: torch.Tensor, samp
     loss = 2 * gaussian_scale.log() + math.log(2 * math.pi)
     loss += (sample_mean_sq - 2 * gaussian_mean * sample_mean + gaussian_mean_sq)/gaussian_scale**2
     loss = 0.50 * loss.sum(-1)
+
+    # Mask out padding elements
+    if ignore_mask is not None: loss.masked_fill_(ignore_mask, 0.0)
 
     if reduce: loss = loss.sum()
     return loss
@@ -141,10 +144,11 @@ class LabelSmoothedCrossEntropyAndSelfGaussianNLLCriterion(LabelSmoothedCrossEnt
 
         # Get NLL Loss for diagonal gaussians
         self_loss = gaussian_nll(
-            gaussian_mean=gaussian_mean,
-            gaussian_scale=gaussian_scale,
-            samples=samples,
-            reduce=reduce,
+            gaussian_mean = gaussian_mean,
+            gaussian_scale = gaussian_scale,
+            samples = samples,
+            ignore_mask = sample["target"].eq(self.padding_idx),
+            reduce = reduce,
         )
 
         # Get weighted sum loss

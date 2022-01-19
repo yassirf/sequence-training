@@ -46,7 +46,7 @@ class LabelSmoothedCrossEntropyAndSelfKLCriterionConfig(FairseqDataclass):
     sentence_avg: bool = II("optimization.sentence_avg")
 
 
-def dirichlet_kl_divergence(log_alphas, log_alphas_target, temperature_scale_num, reduce=True):
+def dirichlet_kl_divergence(log_alphas, log_alphas_target, temperature_scale_num, ignore_mask=None, reduce=True):
 
     # Get target scaled distributions
     alphas_target = torch.exp(log_alphas_target / temperature_scale_num)
@@ -58,6 +58,9 @@ def dirichlet_kl_divergence(log_alphas, log_alphas_target, temperature_scale_num
 
     # Use built in kl divergence (batch, seq)
     loss = torch.distributions.kl.kl_divergence(alphas_target, alphas)
+
+    # Mask out padding elements
+    if ignore_mask is not None: loss.masked_fill_(ignore_mask, 0.0)
 
     if reduce: loss = loss.sum()
     return loss
@@ -170,7 +173,8 @@ class LabelSmoothedCrossEntropyAndSelfKLCriterion(LabelSmoothedCrossEntropyCrite
             log_alphas = student_pred,
             log_alphas_target = log_alpha_teacher,
             temperature_scale_num = self.temperature_scale_num,
-            reduce=reduce
+            ignore_mask = sample["target"].eq(self.padding_idx),
+            reduce = reduce
         )
 
         # Get weighted sum loss
