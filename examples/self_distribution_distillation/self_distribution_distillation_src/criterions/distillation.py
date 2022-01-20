@@ -146,13 +146,13 @@ class KLDivergenceCriterion(LabelSmoothedCrossEntropyCriterion):
         ls_loss, nll_loss = self.compute_nll_loss(model, net_output, sample, reduce)
 
         # Get kl-divergence loss only during training
-        kl_loss = self.compute_kl_loss(model, net_output, sample, reduce) if model.training else 0.0
+        loss = self.compute_kl_loss(model, net_output, sample, reduce) if model.training else 0.0
 
         # Sample size for gradient normalisation
         sample_size = sample["target"].size(0) if self.sentence_avg else sample["ntokens"]
 
         logging_output = {
-            "kl_loss": kl_loss.data,
+            "loss": loss.data,
             "nll_loss": nll_loss.data,
             "ls_loss": ls_loss.data,
             "ntokens": sample["ntokens"],
@@ -165,7 +165,7 @@ class KLDivergenceCriterion(LabelSmoothedCrossEntropyCriterion):
             logging_output["n_correct"] = utils.item(n_correct.data)
             logging_output["total"] = utils.item(total.data)
 
-        return kl_loss, sample_size, logging_output
+        return loss, sample_size, logging_output
 
     @classmethod
     def additional_metrics(cls, logging_outputs) -> None:
@@ -190,14 +190,14 @@ class KLDivergenceCriterion(LabelSmoothedCrossEntropyCriterion):
         """
         Aggregate logging outputs from data parallel training.
         """
-        kl_loss_sum = sum(log.get("kl_loss", 0) for log in logging_outputs)
+        loss_sum = sum(log.get("loss", 0) for log in logging_outputs)
         nll_loss_sum = sum(log.get("nll_loss", 0) for log in logging_outputs)
         ls_loss_sum = sum(log.get("ls_loss", 0) for log in logging_outputs)
         ntokens = sum(log.get("ntokens", 0) for log in logging_outputs)
         sample_size = sum(log.get("sample_size", 0) for log in logging_outputs)
 
         metrics.log_scalar(
-            "kl_loss", kl_loss_sum / sample_size / math.log(2), sample_size, round=3
+            "loss", loss_sum / sample_size / math.log(2), sample_size, round=3
         )
         metrics.log_scalar(
             "nll_loss", nll_loss_sum / ntokens / math.log(2), ntokens, round=3
