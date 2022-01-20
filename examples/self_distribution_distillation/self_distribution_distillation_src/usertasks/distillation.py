@@ -133,9 +133,7 @@ class DistillationTask(TranslationUncertaintyTask):
         sample = self.add_ensemble_logits(sample)
 
         # Now peform the validation step according to the loss function/criterion
-        return super(DistillationTask, self).valid_step(
-            sample, model, criterion
-        )
+        return super(DistillationTask, self).valid_step(sample, model, criterion)
 
 
 @register_task('distillationgauss')

@@ -134,11 +134,14 @@ class DirKLDivergenceAndDirCriterion(KLDivergenceCriterion):
         # Get tracking metrics (no grad)
         ls_loss, nll_loss = self.compute_nll_loss(model, net_output, sample, reduce)
 
+        # Zero element
+        zero = torch.zeros_like(ls_loss)
+
         # Get kl-divergence loss only during training
-        kl_loss = self.compute_kl_loss(model, net_output, sample, reduce) if model.training else 0.0
+        kl_loss = self.compute_kl_loss(model, net_output, sample, reduce) if model.training else zero
 
         # Get dirichlet loss only during training
-        dir_loss = self.compute_dir_loss(model, net_output, sample, reduce) if model.training else 0.0
+        dir_loss = self.compute_dir_loss(model, net_output, sample, reduce) if model.training else zero
 
         # Total loss
         loss = kl_loss + self.self_ratio * dir_loss
