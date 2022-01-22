@@ -155,7 +155,7 @@ class KLDivergenceAndGaussCriterion(KLDivergenceCriterion):
         logging_output = {
             "loss": loss.data,
             "kl_loss": kl_loss.data,
-            "dir_loss": gauss_loss.data,
+            "gauss_loss": gauss_loss.data,
             "nll_loss": nll_loss.data,
             "ls_loss": ls_loss.data,
             "ntokens": sample["ntokens"],
