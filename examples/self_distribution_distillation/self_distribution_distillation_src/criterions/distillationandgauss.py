@@ -103,7 +103,7 @@ class KLDivergenceAndGaussCriterion(KLDivergenceCriterion):
         """
 
         with torch.no_grad():
-            # Get teacher predictions
+            # Get teacher predictions (batch, len, models, vocab)
             teacher_log_probs = sample['teacher_ensemble_logits']/self.temperature_scale_est
             teacher_log_probs = torch.log_softmax(teacher_log_probs, dim = -1)
 
