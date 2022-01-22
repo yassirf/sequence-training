@@ -41,7 +41,7 @@ def self_get_attributes(args):
     args.uniform_gauss_a = getattr(args, 'uniform_gauss_a', 0.1)
     args.uniform_gauss_b = getattr(args, 'uniform_gauss_b', 0.1)
     args.num_passes = getattr(args, 'num_passes', 5)
-    args.bias = getattr(args, 'bias', 0)
+    args.bias = getattr(args, 'bias', 1)
 
 
 @register_model_architecture('self_gaussian_transformer', 'self_gaussian_transformer_tiny')
