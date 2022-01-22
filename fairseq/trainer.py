@@ -498,14 +498,19 @@ class Trainer(object):
 
             # load model parameters
             try:
-                self.model.load_state_dict(
+                msg = self.model.load_state_dict(
                     state["model"], strict=strict, model_cfg=self.cfg.model
                 )
+                logger.info(
+                    "Loading model from state dict\n"
+                    "Missing Keys: {}\nUnexpected Keys: {}".format(str(msg.missing_keys), str(msg.unexpected_keys))
+                )
+
                 # save memory for later steps
                 del state["model"]
                 if utils.has_parameters(self.get_criterion()):
                     self.get_criterion().load_state_dict(
-                        state["criterion"], strict=strict
+                        state["criterion"], strict=True
                     )
                     del state["criterion"]
 
