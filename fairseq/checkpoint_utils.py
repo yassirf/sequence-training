@@ -251,6 +251,7 @@ def load_checkpoint(cfg: CheckpointConfig, trainer, **passthrough_args):
         reset_lr_scheduler,
         optimizer_overrides,
         reset_meters=reset_meters,
+        strict=not cfg.restore_file_nonstrictly,
     )
 
     if (

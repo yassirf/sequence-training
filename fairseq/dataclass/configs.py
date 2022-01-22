@@ -634,6 +634,12 @@ class CheckpointConfig(FairseqDataclass):
             "(default: <save-dir>/checkpoint_last.pt"
         },
     )
+    restore_file_nonstrictly: bool = field(
+        default=False,
+        metadata={
+            "help": "if set, loads checkpoint using a non-strict state dict"
+        },
+    )
     finetune_from_model: Optional[str] = field(
         default=None,
         metadata={

@@ -443,6 +443,7 @@ class Trainer(object):
         reset_lr_scheduler=False,
         optimizer_overrides=None,
         reset_meters=False,
+        strict=True
     ):
         """
         Load all training state from a checkpoint file.
@@ -498,13 +499,13 @@ class Trainer(object):
             # load model parameters
             try:
                 self.model.load_state_dict(
-                    state["model"], strict=False, model_cfg=self.cfg.model
+                    state["model"], strict=strict, model_cfg=self.cfg.model
                 )
                 # save memory for later steps
                 del state["model"]
                 if utils.has_parameters(self.get_criterion()):
                     self.get_criterion().load_state_dict(
-                        state["criterion"], strict=False
+                        state["criterion"], strict=strict
                     )
                     del state["criterion"]
 
