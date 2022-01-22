@@ -40,8 +40,8 @@ class KLDivergenceAndGaussCriterionConfig(FairseqDataclass):
 
 def gaussian_nll(gaussian_mean, gaussian_scale, samples, ignore_mask = None, reduce = True):
     # Get sufficient statistics
-    sample_mean = samples.mean(dim = 1)
-    sample_mean_sq = (samples ** 2).mean(dim = 1)
+    sample_mean = samples.mean(dim = 2)
+    sample_mean_sq = (samples ** 2).mean(dim = 2)
 
     # Get additional quantities
     gaussian_mean_sq = gaussian_mean ** 2
@@ -144,7 +144,7 @@ class KLDivergenceAndGaussCriterion(KLDivergenceCriterion):
         kl_loss = self.compute_kl_loss(model, net_output, sample, reduce) if model.training else zero
 
         # Get dirichlet loss only during training
-        gauss_loss = self.compute_dir_loss(model, net_output, sample, reduce) if model.training else zero
+        gauss_loss = self.compute_gauss_loss(model, net_output, sample, reduce) if model.training else zero
 
         # Total loss
         loss = kl_loss + self.self_ratio * gauss_loss
