@@ -41,7 +41,7 @@ class KLDivergenceAndGumbelCriterionConfig(FairseqDataclass):
 def gumbel_nll(gumbel_mode, gumbel_scale, samples, ignore_mask = None, reduce = True):
     # Get the sample normalisation and shift
     sample_shift = (samples - gumbel_mode.unsqueeze(2))/gumbel_scale.unsqueeze(2)
-    sample_shift = sample_shift + torch.exp(sample_shift)
+    sample_shift = sample_shift + torch.exp(-sample_shift)
 
     loss = sample_shift.mean(2) + gumbel_scale.log()
     loss = loss.sum(dim = -1)
