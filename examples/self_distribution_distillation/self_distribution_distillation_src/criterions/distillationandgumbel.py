@@ -38,7 +38,10 @@ class KLDivergenceAndGumbelCriterionConfig(FairseqDataclass):
     sentence_avg: bool = II("optimization.sentence_avg")
 
 
-def gumbel_nll(gumbel_mode, gumbel_scale, samples, ignore_mask = None, reduce = True):
+def gumbel_nll(gumbel_mean, gumbel_scale, samples, ignore_mask = None, reduce = True):
+    # Compute the mode from the mean
+    gumbel_mode = gumbel_mean - gumbel_scale * 0.5772156649
+
     # Get the sample normalisation and shift
     sample_shift = (samples - gumbel_mode.unsqueeze(2))/gumbel_scale.unsqueeze(2)
     sample_shift = sample_shift + torch.exp(-sample_shift)
@@ -103,12 +106,12 @@ class KLDivergenceAndGumbelCriterion(KLDivergenceCriterion):
             teacher_log_probs = torch.log_softmax(teacher_log_probs, dim = -1)
 
         # Get student predictions
-        gumbel_mode = net_output[0]
+        gumbel_mean = net_output[0]
         gumbel_scale = net_output[1]['student_predictions_scale']
 
         # Compute loss
         loss = gumbel_nll(
-            gumbel_mode = gumbel_mode,
+            gumbel_mean = gumbel_mean,
             gumbel_scale = gumbel_scale,
             samples = teacher_log_probs,
             ignore_mask = self.get_padding_mask(sample),
