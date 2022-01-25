@@ -74,7 +74,7 @@ class TranslationUncertaintyTask(TranslationTask):
         parser.add_argument('--compute_uncertainty', type=int, default=0,
                             help="Whether or not to compute uncertainty")
         parser.add_argument('--uncertainty_class', type=str, default='categorical',
-                            choices=['categorical', 'dirichlet', 'gaussian', 'dirgaussian'], help="Type of model output")
+                            choices=['categorical', 'dirichlet', 'gaussian', 'laplace'], help="Type of model output")
         parser.add_argument('--ood_num_samples', type=int, default=25,
                             help="Number of samples to draw to compute uncertainties")
         parser.add_argument('--ood_temperature', type=float, default=1.0,
