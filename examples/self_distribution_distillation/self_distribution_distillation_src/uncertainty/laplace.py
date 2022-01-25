@@ -3,13 +3,13 @@ import torch
 
 from .misc import process_outputs_gaussian
 from .estimators import (
-    EnsembleGaussianCategoricals,
+    EnsembleLaplaceCategoricals,
 )
 
 
-def compute_token_gaussian_uncertainties(args, outputs, extra):
+def compute_token_laplace_uncertainties(args, outputs, extra):
     """
-    Function which computes token-level measures of uncertainty for Gaussian Categorical model.
+    Function which computes token-level measures of uncertainty for Laplace Categorical model.
     :param args: specifies uncertainty estimation parameters
     :param outputs: List of Tensors of size [batch_size, seq_len, vocab] of Log Dirichlet Concentrations
     :return: Tensors of token level uncertainties of size [batch_size, seq_len]
@@ -19,7 +19,7 @@ def compute_token_gaussian_uncertainties(args, outputs, extra):
 
     outputs = [(op, ex['student_predictions_scale']) for op, ex in zip(outputs, extra)]
 
-    estimator = EnsembleGaussianCategoricals()
+    estimator = EnsembleLaplaceCategoricals()
     returns = estimator(args, outputs)
 
     return returns['entropy_expected'].clamp_(min=0.0, max=None), \
@@ -27,9 +27,9 @@ def compute_token_gaussian_uncertainties(args, outputs, extra):
            returns['mutual_information'].clamp_(min=0.0, max=None)
 
 
-def compute_sequence_gaussian_uncertainties(args, outputs, extra, output_ids, output_length, mask):
+def compute_sequence_laplace_uncertainties(args, outputs, extra, output_ids, output_length, mask):
     """
-    Function which computes sequence-level measures of uncertainty for Gaussian Categorical model.
+    Function which computes sequence-level measures of uncertainty for Laplace Categorical model.
     :param args: specifies uncertainty estimation parameters
     :param outputs: List of Tensors of size [batch_size, seq_len, vocab] of Logits
     :param output_ids: Tensor of size [batch_size, seq_len] of token ids
@@ -44,7 +44,7 @@ def compute_sequence_gaussian_uncertainties(args, outputs, extra, output_ids, ou
     outputs = [(op, ex['student_predictions_scale']) for op, ex in zip(outputs, extra)]
 
     # Get samples
-    outputs = EnsembleGaussianCategoricals.sample(args, outputs)
+    outputs = EnsembleLaplaceCategoricals.sample(args, outputs)
 
     # Compute the expectation
     expected = torch.stack(outputs, dim=2)
