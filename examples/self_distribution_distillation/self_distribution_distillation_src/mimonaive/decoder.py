@@ -173,13 +173,15 @@ class NaiveMimoTransformerDecoder(TransformerDecoder):
         self_attn_padding_mask: Optional[Tensor] = None
         if self.cross_self_attention or prev_output_tokens.eq(self.padding_idx).any():
             self_attn_padding_mask = prev_output_tokens.eq(self.padding_idx)
+            self_attn_padding_mask = mimo_batchify(self_attn_padding_mask, self.args.mimo_num_heads)
+            self_attn_padding_mask = mimo_convert_to_list(self_attn_padding_mask)
 
         # decoder layers
         attn: Optional[Tensor] = None
         inner_states: List[Optional[Tensor]] = [x]
         for idx, layer in enumerate(self.layers):
             if incremental_state is None and not full_context_alignment:
-                self_attn_mask = self.buffered_future_mask(x)
+                self_attn_mask = [self.buffered_future_mask(x)] * self.args.mimo_num_heads
             else:
                 self_attn_mask = None
 

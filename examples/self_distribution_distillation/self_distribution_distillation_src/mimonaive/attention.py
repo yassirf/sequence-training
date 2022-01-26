@@ -1,8 +1,7 @@
 
 import torch
 import torch.nn as nn
-import torch.Tensor as Tensor
-
+from torch import Tensor
 from typing import List, Tuple, Union, Optional, Dict
 
 from fairseq.incremental_decoding_utils import with_incremental_state
