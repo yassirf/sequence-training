@@ -30,6 +30,6 @@ def PositionalEmbedding(
         m = SinusoidalPositionalEmbedding(
             embedding_dim,
             padding_idx,
-            init_size=num_embeddings + padding_idx + 1,
+            init_size=num_embeddings + (padding_idx or 1) + 1,
         )
     return m
