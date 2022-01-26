@@ -15,6 +15,7 @@ class MimoEmbedding(nn.Module):
         Multi-input Embedding layer, which takes in a collection of sequences and returns a mix
         Note that supplying a padding_idx does not ensure it is trainable
         """
+        super(MimoEmbedding, self).__init__()
 
         self.num_inputs = num_inputs
         self.num_embeddings = num_embeddings
