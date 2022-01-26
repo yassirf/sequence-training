@@ -52,7 +52,7 @@ class NaiveMimoTransformerEncoderLayer(TransformerEncoderLayer):
         # will become -inf, which results in NaN in model parameters
 
         # Ensure the number of masks match the number of heads in the system
-        assert len(encoder_padding_mask) == self.args.mimo_num_heads
+        if encoder_padding_mask is not None: assert len(encoder_padding_mask) == self.args.mimo_num_heads
         if attn_mask is not None:
             assert len(attn_mask) == self.args.mimo_num_heads
 
