@@ -44,6 +44,9 @@ class NaiveMimoTransformerDecoder(TransformerDecoder):
         # Number of mimo heads
         self.mimo_num_heads = args.mimo_num_heads
 
+        # Set the padding idx separately
+        self.padding_idx = dictionary.pad()
+
     def build_output_projection(self, args, dictionary, embed_tokens):
         cfg = TransformerConfig.from_namespace(args)
         if cfg.adaptive_softmax_cutoff is not None:

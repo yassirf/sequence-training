@@ -17,6 +17,9 @@ class NaiveMimoTransformerEncoder(TransformerEncoder):
     def __init__(self, args, dictionary, embed_tokens):
         super(NaiveMimoTransformerEncoder, self).__init__(args, dictionary, embed_tokens)
 
+        # Set the padding idx separately
+        self.padding_idx = dictionary.pad()
+
     def build_encoder_layer(self, args):
         cfg = TransformerConfig.from_namespace(args)
 
