@@ -58,16 +58,18 @@ class NaiveMimoTransformerDecoder(TransformerDecoder):
             )
         elif self.share_input_output_embed:
             self.output_projection = nn.ModuleList([nn.Linear(
-                self.embed_tokens.weight.shape[1],
-                self.embed_tokens.weight.shape[0],
-                bias=False,
+                self.output_embed_dim,
+                len(dictionary),
+                bias=False
             ) for _ in range(self.args.mimo_num_heads)])
 
             for i, emb in enumerate(self.embed_tokens.embs):
                 self.output_projection[i].weight = emb.weight
         else:
             self.output_projection = nn.ModuleList([nn.Linear(
-                self.output_embed_dim, len(dictionary), bias=False
+                self.output_embed_dim,
+                len(dictionary),
+                bias=False
             ) for _ in range(self.args.mimo_num_heads)])
 
             for i in range(self.mimo_num_heads):
