@@ -138,8 +138,8 @@ class NaiveMimoTransformerDecoder(TransformerDecoder):
         if encoder_out is not None and len(encoder_out["encoder_out"]) > 0:
             enc = encoder_out["encoder_out"][0]
             assert (
-                enc.size()[1] == bs
-            ), f"Expected enc.shape == (t, {bs}, c) got {enc.shape}"
+                enc.size()[1] == bs // self.mimo_num_heads
+            ), f"Expected enc.shape == (t, {bs // self.mimo_num_heads}, c) got {enc.shape}"
         if encoder_out is not None and len(encoder_out["encoder_padding_mask"]) > 0:
             padding_mask = encoder_out["encoder_padding_mask"][0]
 
