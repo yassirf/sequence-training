@@ -70,7 +70,9 @@ class NaiveMimoTransformerModel(TransformerModel):
         """
 
         # At inference time we repeat the input several times
-        if not self.training: src_tokens = torch.cat([src_tokens] * self.args.mimo_num_heads)
+        if not self.training:
+            src_tokens = torch.cat([src_tokens] * self.args.mimo_num_heads)
+            prev_output_tokens = torch.cat([prev_output_tokens] * self.args.mimo_num_heads)
 
         encoder_out = self.encoder(src_tokens, src_lengths=src_lengths, return_all_hiddens=return_all_hiddens)
         decoder_out = self.decoder(
