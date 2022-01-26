@@ -26,6 +26,7 @@ class MultiMultiheadAttention(nn.Module):
         q_noise=0.0,
         qn_block_size=8,
     ):
+        super(MultiMultiheadAttention, self).__init__()
         # Number of separate attention mechanisms
         self.num = num
 
