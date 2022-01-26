@@ -202,14 +202,14 @@ class NaiveMimoTransformerDecoder(TransformerDecoder):
             )
             inner_states.append(x)
             if layer_attn is not None and idx == alignment_layer:
-                attn = layer_attn.float().to(x)
+                attn = [la.float().to(x) for la in layer_attn]
 
         if attn is not None:
             if alignment_heads is not None:
                 attn = attn[:alignment_heads]
 
             # average probabilities over heads
-            attn = attn.mean(dim=0)
+            attn = [a.mean(dim=0) for a in attn]
 
         if self.layer_norm is not None:
             x = self.layer_norm(x)
