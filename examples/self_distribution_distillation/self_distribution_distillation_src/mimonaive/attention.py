@@ -47,6 +47,7 @@ class MultiMultiheadAttention(nn.Module):
                 qn_block_size = qn_block_size,
             ) for _ in range(num)
         ])
+        self.num_heads = num_heads * num
 
         self.reset_parameters()
         self.encoder_decoder_attention = encoder_decoder_attention
