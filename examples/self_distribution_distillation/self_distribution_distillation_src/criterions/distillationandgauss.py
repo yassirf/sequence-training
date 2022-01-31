@@ -15,6 +15,10 @@ class KLDivergenceAndGaussCriterionConfig(FairseqDataclass):
         default=0.0,
         metadata={"help": "epsilon for label smoothing, 0 means no label smoothing"},
     )
+    ls_ratio: float = field(
+        default=0.0,
+        metadata={"help": "Weighting of label smoothed loss"}
+    )
     self_ratio: float = field(
         default=0.0,
         metadata={"help": "ratio of default to self loss"}
@@ -67,6 +71,7 @@ class KLDivergenceAndGaussCriterion(KLDivergenceCriterion):
             label_smoothing,
             ignore_prefix_size=0,
             report_accuracy=False,
+            ls_ratio=0.0,
             self_ratio=0.0,
             temperature_scale_est=1.0,
             temperature_scale_num=1.0,
@@ -81,6 +86,9 @@ class KLDivergenceAndGaussCriterion(KLDivergenceCriterion):
             temperature_scale_num = temperature_scale_num,
         )
 
+        # For weighting label smoothed loss
+        self.ls_ratio = ls_ratio
+
         # For dirichlet estimation
         self.self_ratio = self_ratio
 
@@ -92,6 +100,7 @@ class KLDivergenceAndGaussCriterion(KLDivergenceCriterion):
             label_smoothing = cfg.label_smoothing,
             ignore_prefix_size = cfg.ignore_prefix_size,
             report_accuracy = cfg.report_accuracy,
+            ls_ratio=cfg.ls_ratio,
             self_ratio = cfg.self_ratio,
             temperature_scale_est = cfg.temperature_scale_est,
             temperature_scale_num = cfg.temperature_scale_num,
@@ -134,7 +143,7 @@ class KLDivergenceAndGaussCriterion(KLDivergenceCriterion):
         # Get prediction
         net_output = model(**sample["net_input"])
 
-        # Get tracking metrics (no grad)
+        # Get label smoothed and nll loss
         ls_loss, nll_loss = self.compute_nll_loss(model, net_output, sample, reduce)
 
         # Zero element
@@ -147,7 +156,7 @@ class KLDivergenceAndGaussCriterion(KLDivergenceCriterion):
         gauss_loss = self.compute_gauss_loss(model, net_output, sample, reduce) if model.training else zero
 
         # Total loss
-        loss = kl_loss + self.self_ratio * gauss_loss
+        loss = ls_loss * self.ls_ratio + (kl_loss + self.self_ratio * gauss_loss) * (1 - self.ls_ratio)
 
         # Sample size for gradient normalisation
         sample_size = sample["target"].size(0) if self.sentence_avg else sample["ntokens"]

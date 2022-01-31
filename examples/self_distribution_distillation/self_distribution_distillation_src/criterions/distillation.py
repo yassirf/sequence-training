@@ -15,6 +15,10 @@ class KLDivergenceCriterionConfig(FairseqDataclass):
         default=0.0,
         metadata={"help": "epsilon for label smoothing, 0 means no label smoothing"},
     )
+    ls_ratio: float = field(
+        default=0.0,
+        metadata={"help": "Weighting of label smoothed loss"}
+    )
     temperature_scale_est: float = field(
         default=1.0,
         metadata={"help": "temperature scaling teacher predictions"}
@@ -65,6 +69,7 @@ class KLDivergenceCriterion(LabelSmoothedCrossEntropyCriterion):
             label_smoothing,
             ignore_prefix_size=0,
             report_accuracy=False,
+            ls_ratio = 0.0,
             temperature_scale_est = 1.0,
             temperature_scale_num = 1.0,
     ):
@@ -75,6 +80,9 @@ class KLDivergenceCriterion(LabelSmoothedCrossEntropyCriterion):
             ignore_prefix_size=ignore_prefix_size,
             report_accuracy=report_accuracy
         )
+
+        # For weighting label smoothed loss
+        self.ls_ratio = ls_ratio
 
         # When obtaining teacher probabilities
         self.temperature_scale_est = temperature_scale_est
@@ -90,6 +98,7 @@ class KLDivergenceCriterion(LabelSmoothedCrossEntropyCriterion):
             label_smoothing = cfg.label_smoothing,
             ignore_prefix_size = cfg.ignore_prefix_size,
             report_accuracy = cfg.report_accuracy,
+            ls_ratio = cfg.ls_ratio,
             temperature_scale_est = cfg.temperature_scale_est,
             temperature_scale_num = cfg.temperature_scale_num,
         )
@@ -97,7 +106,6 @@ class KLDivergenceCriterion(LabelSmoothedCrossEntropyCriterion):
     def get_padding_mask(self, sample):
         return sample["target"].eq(self.padding_idx)
 
-    @torch.no_grad()
     def compute_nll_loss(self, model, net_output, sample, reduce=True):
         """
         Compute the smooth and negative log-likelihood during validation for tracking purposes
@@ -142,14 +150,17 @@ class KLDivergenceCriterion(LabelSmoothedCrossEntropyCriterion):
         # Get prediction
         net_output = model(**sample["net_input"])
 
-        # Get tracking metrics (no grad)
+        # Get label smoothed and nll loss
         ls_loss, nll_loss = self.compute_nll_loss(model, net_output, sample, reduce)
 
         # Zero element
         zero = torch.zeros_like(ls_loss)
 
         # Get kl-divergence loss only during training
-        loss = self.compute_kl_loss(model, net_output, sample, reduce) if model.training else zero
+        kl_loss = self.compute_kl_loss(model, net_output, sample, reduce) if model.training else zero
+
+        # Get weighted loss
+        loss = ls_loss * self.ls_ratio + kl_loss * (1 - self.ls_ratio)
 
         # Sample size for gradient normalisation
         sample_size = sample["target"].size(0) if self.sentence_avg else sample["ntokens"]
@@ -158,6 +169,7 @@ class KLDivergenceCriterion(LabelSmoothedCrossEntropyCriterion):
             "loss": loss.data,
             "nll_loss": nll_loss.data,
             "ls_loss": ls_loss.data,
+            "kl_loss": kl_loss.data,
             "ntokens": sample["ntokens"],
             "nsentences": sample["target"].size(0),
             "sample_size": sample_size,
@@ -196,6 +208,7 @@ class KLDivergenceCriterion(LabelSmoothedCrossEntropyCriterion):
         loss_sum = sum(log.get("loss", 0) for log in logging_outputs)
         nll_loss_sum = sum(log.get("nll_loss", 0) for log in logging_outputs)
         ls_loss_sum = sum(log.get("ls_loss", 0) for log in logging_outputs)
+        kl_loss_sum = sum(log.get("kl_loss", 0) for log in logging_outputs)
         ntokens = sum(log.get("ntokens", 0) for log in logging_outputs)
         sample_size = sum(log.get("sample_size", 0) for log in logging_outputs)
 
@@ -207,6 +220,9 @@ class KLDivergenceCriterion(LabelSmoothedCrossEntropyCriterion):
         )
         metrics.log_scalar(
             "ls_loss", ls_loss_sum / ntokens / math.log(2), ntokens, round=3
+        )
+        metrics.log_scalar(
+            "kl_loss", kl_loss_sum / ntokens / math.log(2), ntokens, round=3
         )
         metrics.log_derived(
             "ppl", lambda meters: utils.get_perplexity(meters["nll_loss"].avg)
