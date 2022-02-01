@@ -1,4 +1,5 @@
 import os
+import math
 from types import MethodType
 
 import torch
@@ -25,6 +26,12 @@ class DistillationTask(TranslationUncertaintyTask):
         self.teacher_ensemble = ensemble
         assert ensemble is not None
 
+        # The top-k predictions to save from the ensemble
+        self.teacher_ensemble_topk = args.teacher_ensemble_topk
+
+        # Epsilon associated with topk calculation
+        self.topk_eps = 1e-8
+
     @classmethod
     def add_args(cls, parser):
         """
@@ -34,6 +41,7 @@ class DistillationTask(TranslationUncertaintyTask):
 
         # Specifies the distillation parameters
         parser.add_argument('--teacher-ensemble-path', type=str, help="Path to ensemble models to distill from")
+        parser.add_argument('--teacher-ensemble-topk', type=int, default=-1, help="Save only top-k predictions")
 
     @classmethod
     def setup_task(cls, cfg, **kwargs):
@@ -95,6 +103,38 @@ class DistillationTask(TranslationUncertaintyTask):
             [model(**sample['net_input'])[0] for model in self.teacher_ensemble], dim = 2
         )
 
+        # By default this is set to -1, meaning all predictions are saved
+        if self.teacher_ensemble_topk > 0:
+
+            # Lets only make use of the topk predictions
+            topk = self.teacher_ensemble_topk
+
+            # We also need the vocab size to determine smoothing
+            vocab = sample['teacher_ensemble_logits'].size(-1)
+
+            # These will be modified by only utilising the topk predictions
+            predictions = sample['teacher_ensemble_logits']
+
+            # We need the output to be in terms of log-probabilities
+            predictions = torch.log_softmax(predictions, dim = -1)
+
+            # Now extract the topk predictions
+            topk_preds, topk_inds = torch.topk(predictions, k = topk, dim = -1)
+
+            # Get the log-mass associated with these predictions
+            topk_mass = torch.logsumexp(topk_preds, dim = -1, keepdims = True)
+            topk_mass = torch.exp(topk_mass)
+
+            # Get the log-mass associated with non-topk tokens
+            botk_logmass = torch.log(1 - topk_mass + self.topk_eps) - math.log(vocab - topk)
+
+            # Now create a new prediction
+            newpred = torch.zeros_like(predictions) + botk_logmass
+            newpred = newpred.scatter(-1, topk_inds, topk_preds)
+
+            # Return this to the sample
+            sample['teacher_ensemble_logits'] = newpred
+
         return sample
 
     def train_step(self, sample, model, criterion, optimizer, update_num, ignore_grad=False):
@@ -140,6 +180,16 @@ class DistillationTask(TranslationUncertaintyTask):
 class DistillationAndGaussTask(DistillationTask):
     def __init__(self, args, src_dict, tgt_dict, ensemble):
         super(DistillationAndGaussTask, self).__init__(args, src_dict, tgt_dict, ensemble)
+
+    @classmethod
+    def add_args(cls, parser):
+        """
+        # Import all needed arguments for generation
+        """
+        TranslationUncertaintyTask.add_args(parser)
+
+        # Specifies the distillation parameters
+        parser.add_argument('--teacher-ensemble-path', type=str, help="Path to ensemble models to distill from")
 
     @torch.no_grad()
     def add_ensemble_logits(self, sample):
