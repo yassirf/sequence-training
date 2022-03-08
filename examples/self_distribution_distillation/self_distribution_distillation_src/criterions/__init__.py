@@ -3,6 +3,7 @@ from .self import LabelSmoothedCrossEntropyAndSelfKLCriterion
 from .selfgaussian import LabelSmoothedCrossEntropyAndSelfGaussianNLLCriterion
 
 from .distillation import KLDivergenceCriterion
+from .distillation import MapDistillationCriterion
 from .distillationanddir import KLDivergenceAndDirCriterion
 from .distillationandgauss import KLDivergenceAndGaussCriterion
 from .distillationandlaplace import KLDivergenceAndLaplaceCriterion
@@ -16,6 +17,7 @@ __all__ = [
     'LabelSmoothedCrossEntropyAndSelfGaussianNLLCriterion',
     #
     'KLDivergenceCriterion',
+    'MapDistillationCriterion',
     'KLDivergenceAndDirCriterion',
     'KLDivergenceAndGaussCriterion',
     'KLDivergenceAndLaplaceCriterion',
