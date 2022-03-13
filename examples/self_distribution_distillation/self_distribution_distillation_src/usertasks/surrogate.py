@@ -104,7 +104,7 @@ class TranslationSurrogateUncertaintyTask(TranslationUncertaintyTask):
 
             logger.info("loading surrogate models from {}".format(cfg.surrogate_uncertainty_path))
             surrogate, _ = checkpoint_utils.load_model_ensemble(
-                cfg.surrogate_uncertainty_path.split(':'), task = TranslationSurrogateUncertaintyTask.setup_task(cfg, **kwargs)
+                cfg.surrogate_uncertainty_path.split(':'), task = TranslationTask.setup_task(cfg, **kwargs)
             )
 
             # Ensure models are on cuda
