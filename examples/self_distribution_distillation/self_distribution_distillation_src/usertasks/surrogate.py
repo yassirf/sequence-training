@@ -108,7 +108,7 @@ class TranslationSurrogateUncertaintyTask(TranslationUncertaintyTask):
             )
 
             # Ensure models are on cuda
-            use_cuda = torch.cuda.is_available() and not cfg.cpu
+            use_cuda = torch.cuda.is_available()
 
             # Optimize ensemble for generation (includes setting .eval())
             for model in surrogate:
